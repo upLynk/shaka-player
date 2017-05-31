@@ -24,6 +24,7 @@ describe('DrmEngine', function() {
 
   var onErrorSpy;
   var onKeyStatusSpy;
+  var onExpirationSpy;
   var drmEngine;
   var mediaSourceEngine;
   var networkingEngine;
@@ -40,6 +41,8 @@ describe('DrmEngine', function() {
   var videoSegmentUri = '/base/test/test/assets/multidrm-video-segment.mp4';
   var audioInitSegmentUri = '/base/test/test/assets/multidrm-audio-init.mp4';
   var audioSegmentUri = '/base/test/test/assets/multidrm-audio-segment.mp4';
+
+  var ContentType = shaka.util.ManifestParserUtils.ContentType;
 
   beforeAll(function(done) {
     var supportTest = shaka.media.DrmEngine.probeSupport()
@@ -69,6 +72,7 @@ describe('DrmEngine', function() {
   beforeEach(function(done) {
     onErrorSpy = jasmine.createSpy('onError');
     onKeyStatusSpy = jasmine.createSpy('onKeyStatus');
+    onExpirationSpy = jasmine.createSpy('onExpirationUpdated');
 
     mediaSource = new MediaSource();
     video.src = window.URL.createObjectURL(mediaSource);
@@ -87,7 +91,7 @@ describe('DrmEngine', function() {
     });
 
     drmEngine = new shaka.media.DrmEngine(
-        networkingEngine, onErrorSpy, onKeyStatusSpy);
+        networkingEngine, onErrorSpy, onKeyStatusSpy, onExpirationSpy);
     var config = {
       retryParameters: shaka.net.NetworkingEngine.defaultRetryParameters(),
       clearKeys: {},
@@ -118,10 +122,12 @@ describe('DrmEngine', function() {
       mediaSourceEngine = new shaka.media.MediaSourceEngine(
           video, mediaSource, null);
 
-      mediaSourceEngine.init({
-        'video': 'video/mp4; codecs="avc1.640015"',
-        'audio': 'audio/mp4; codecs="mp4a.40.2"'
-      }, false);
+      // Create empty object first and initialize the fields through
+      // [] to allow field names to be expressions.
+      var expectedObject = {};
+      expectedObject[ContentType.AUDIO] = 'audio/mp4; codecs="mp4a.40.2"';
+      expectedObject[ContentType.VIDEO] = 'video/mp4; codecs="avc1.640015"';
+      mediaSourceEngine.init(expectedObject);
       done();
     });
   });
@@ -142,7 +148,7 @@ describe('DrmEngine', function() {
   });
 
   describe('basic flow', function() {
-    external_it('gets a license and can play encrypted segments',
+    drm_it('gets a license and can play encrypted segments',
         function(done) {
           checkKeySystems();
 
@@ -183,10 +189,12 @@ describe('DrmEngine', function() {
           drmEngine.init(manifest, /* offline */ false).then(function() {
             return drmEngine.attach(video);
           }).then(function() {
-            return mediaSourceEngine.appendBuffer('video', videoInitSegment,
+            return mediaSourceEngine.appendBuffer(ContentType.VIDEO,
+                                                  videoInitSegment,
                                                   null, null);
           }).then(function() {
-            return mediaSourceEngine.appendBuffer('audio', audioInitSegment,
+            return mediaSourceEngine.appendBuffer(ContentType.AUDIO,
+                                                  audioInitSegment,
                                                   null, null);
           }).then(function() {
             return encryptedEventSeen;
@@ -218,10 +226,12 @@ describe('DrmEngine', function() {
               }
             }
 
-            return mediaSourceEngine.appendBuffer('video', videoSegment,
+            return mediaSourceEngine.appendBuffer(ContentType.VIDEO,
+                                                  videoSegment,
                                                   null, null);
           }).then(function() {
-            return mediaSourceEngine.appendBuffer('audio', audioSegment,
+            return mediaSourceEngine.appendBuffer(ContentType.AUDIO,
+                                                  audioSegment,
                                                   null, null);
           }).then(function() {
             expect(video.buffered.end(0)).toBeGreaterThan(0);
@@ -237,8 +247,9 @@ describe('DrmEngine', function() {
   });  // describe('basic flow')
 
   function checkKeySystems() {
+    // TODO: re-enable these tests for PlayReady (b/38496036)
     // Our test asset for this suite can use any of these key systems:
-    if (!support['com.widevine.alpha'] && !support['com.microsoft.playready']) {
+    if (!support['com.widevine.alpha']) {
       // pending() throws a special exception that Jasmine uses to skip a test.
       // It can only be used from inside it(), not describe() or beforeEach().
       pending('Skipping DrmEngine tests.');

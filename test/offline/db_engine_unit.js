@@ -32,7 +32,7 @@ describe('DBEngine', function() {
       schema = {'test': 'key', 'other': 'key'};
       shaka.offline.DBEngine.deleteDatabase().then(function() {
         db = new shaka.offline.DBEngine();
-        return db.init(schema);
+        return db.init(schema, /* opt_retryCount */ 5);
       }).catch(fail).then(done);
     } else {
       done();
@@ -68,8 +68,7 @@ describe('DBEngine', function() {
     }).catch(fail).then(done);
   });
 
-  // QUARANTINED: this test does not pass 100% of the time on IE and Edge.
-  quarantined_it('supports concurrent operations', function(done) {
+  it('supports concurrent operations', function(done) {
     if (!shaka.offline.DBEngine.isSupported()) {
       pending('DBEngine is not supported on this platform.');
     }
@@ -97,8 +96,7 @@ describe('DBEngine', function() {
     }).catch(fail).then(done);
   });
 
-  // QUARANTINED: this test does not pass 100% of the time on IE and Edge.
-  quarantined_it('supports remove', function(done) {
+  it('supports remove', function(done) {
     if (!shaka.offline.DBEngine.isSupported()) {
       pending('DBEngine is not supported on this platform.');
     }
@@ -115,7 +113,7 @@ describe('DBEngine', function() {
       return db.get('test', 2);
     }).then(function(data) {
       expect(data).toBeFalsy();
-      return db.removeWhere('test', function(s) { return s.i >= 7; });
+      return db.removeKeys('test', [4, 5, 6]);
     }).then(function() {
       return db.get('test', 5);
     }).then(function(data) {
@@ -155,6 +153,7 @@ describe('DBEngine', function() {
       pending('DBEngine is not supported on this platform.');
     }
     var expectedError = new shaka.util.Error(
+        shaka.util.Error.Severity.CRITICAL,
         shaka.util.Error.Category.STORAGE,
         shaka.util.Error.Code.OPERATION_ABORTED);
     var insert1Finished = false, insert2Finished = false;
@@ -211,5 +210,34 @@ describe('DBEngine', function() {
         })
         .catch(fail)
         .then(done);
+  });
+
+  it('will catch aborting transactions', function(done) {
+    if (!shaka.offline.DBEngine.isSupported()) {
+      pending('DBEngine is not supported on this platform.');
+    }
+
+    // Change the insert function so that once the put request completes
+    // the transaction will abort. This should cause the promise to be
+    // rejected.
+    db.insert = function(storeName, value) {
+      return this.createTransaction_(storeName, 'readwrite', function(store) {
+        var request = store.put(value);
+        request.onsuccess = function(event) {
+          request.transaction.abort();
+        };
+      });
+    };
+
+    var expected = new shaka.util.Error(
+        shaka.util.Error.Severity.CRITICAL,
+        shaka.util.Error.Category.STORAGE,
+        shaka.util.Error.Code.OPERATION_ABORTED);
+
+    db.insert('test', {key: 1}).then(fail, function(error) {
+      shaka.log.info('insert failed as expected ', error);
+      shaka.test.Util.expectToEqualError(error, expected);
+      done();
+    });
   });
 });

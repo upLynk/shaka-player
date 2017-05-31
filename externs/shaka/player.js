@@ -130,12 +130,17 @@ shakaExtern.Stats;
  *   bandwidth: number,
  *
  *   language: string,
+ *   label: ?string,
  *   kind: ?string,
  *   width: ?number,
  *   height: ?number,
  *   frameRate: ?number,
  *   mimeType: ?string,
- *   codecs: ?string
+ *   codecs: ?string,
+ *   audioCodec: ?string,
+ *   videoCodec: ?string,
+ *   primary: boolean,
+ *   roles: !Array.<string>
  * }}
  *
  * @description
@@ -158,9 +163,11 @@ shakaExtern.Stats;
  * @property {string} language
  *   The language of the track, or 'und' if not given.  This is the exact
  *   value provided in the manifest; it may need to be normalized.
+ * @property {?string} label
+ *   The track label, unique text that should describe the track.
  * @property {?string} kind
- *   (only for text tracks) The kind of text track, either 'captions' or
- *   'subtitles'.
+ *   (only for text tracks) The kind of text track, either 'caption' or
+ *   'subtitle'.
  * @property {?number} width
  *   The video width provided in the manifest, if present.
  * @property {?number} height
@@ -171,6 +178,18 @@ shakaExtern.Stats;
  *   The MIME type of the content provided in the manifest.
  * @property {?string} codecs
  *   The audio/video codecs string provided in the manifest, if present.
+ * @property {?string} audioCodec
+ *   The audio codecs string provided in the manifest, if present.
+  * @property {?string} videoCodec
+ *   The video codecs string provided in the manifest, if present.
+ * @property {boolean} primary
+ *   True indicates that this in the primary language for the content.
+ *   This flag is based on signals from the manifest.
+ *   This can be a useful hint about which language should be the default, and
+ *   indicates which track Shaka will use when the user's language preference
+ *   cannot be satisfied.
+ * @property {!Array.<string>} roles
+ *   The roles of the track, e.g. 'main', 'caption', or 'commentary'.
  * @exportDoc
  */
 shakaExtern.Track;
@@ -405,7 +424,9 @@ shakaExtern.DrmConfiguration;
 /**
  * @typedef {{
  *   customScheme: shakaExtern.DashContentProtectionCallback,
- *   clockSyncUri: string
+ *   clockSyncUri: string,
+ *   ignoreDrmInfo: boolean,
+ *   xlinkFailGracefully: boolean
  * }}
  *
  * @property {shakaExtern.DashContentProtectionCallback} customScheme
@@ -416,6 +437,15 @@ shakaExtern.DrmConfiguration;
  *   A default clock sync URI to be used with live streams which do not
  *   contain any clock sync information.  The "Date" header from this URI
  *   will be used to determine the current time.
+ * @property {boolean} ignoreDrmInfo
+ *   If true will cause DASH parser to ignore DRM information specified
+ *   by the manifest and treat it as if it signaled no particular key
+ *   system and contained no init data. Defaults to false if not provided.
+ * @property {boolean} xlinkFailGracefully
+ *   If true, xlink-related errors will result in a fallback to the tag's
+ *   existing contents. If false, xlink-related errors will be propagated
+ *   to the application and will result in a playback failure. Defaults to
+ *   false if not provided.
  *
  * @exportDoc
  */
@@ -463,8 +493,9 @@ shakaExtern.ManifestConfiguration;
  *   bufferingGoal: number,
  *   bufferBehind: number,
  *   ignoreTextStreamFailures: boolean,
- *   useRelativeCueTimestamps: boolean,
- *   startAtSegmentBoundary: boolean
+ *   startAtSegmentBoundary: boolean,
+ *   smallGapLimit: number,
+ *   jumpLargeGaps: boolean
  * }}
  *
  * @description
@@ -488,14 +519,20 @@ shakaExtern.ManifestConfiguration;
  * @property {boolean} ignoreTextStreamFailures
  *   If true, the player will ignore text stream failures and proceed to play
  *   other streams.
- * @property {boolean} useRelativeCueTimestamps
- *   If true, WebVTT cue timestamps will be treated as relative to the start
- *   time of the VTT segment. Defaults to false.
  * @property {boolean} startAtSegmentBoundary
  *   If true, adjust the start time backwards so it is at the start of a
  *   segment. This affects both explicit start times and calculated start time
  *   for live streams. This can put us further from the live edge. Defaults to
  *   false.
+ * @property {number} smallGapLimit
+ *   The limit (in seconds) for a gap in the media to be considered "small".
+ *   Small gaps are jumped automatically without events.  Large gaps result
+ *   in a Player event and can be jumped.
+ * @property {boolean} jumpLargeGaps
+ *   If true, jump large gaps in addition to small gaps.  The event will be
+ *   raised first.  Then, if the app doesn't call preventDefault() on the event,
+ *   the Player will jump the gap.  If false, then the event will be raised,
+ *   but the gap will not be jumped.
  * @exportDoc
  */
 shakaExtern.StreamingConfiguration;
