@@ -241,7 +241,9 @@ shakaAssets.UplynkResponseFilter = function(type, response) {
   if (type == shaka.net.NetworkingEngine.RequestType.MANIFEST) {
     // Parse a custom header that contains a value needed to build a proper
     // license server URL
-    shakaAssets.uplynk_prefix = response.headers['x-uplynk-prefix'];
+    if (response.headers['x-uplynk-prefix']) {
+      shakaAssets.uplynk_prefix = response.headers['x-uplynk-prefix'];
+    }
   }
 };
 
@@ -257,7 +259,13 @@ shakaAssets.UplynkResponseFilter = function(type, response) {
 shakaAssets.UplynkRequestFilter = function(type, request) {
   if (type == shaka.net.NetworkingEngine.RequestType.LICENSE ||
       type == shaka.net.NetworkingEngine.RequestType.MANIFEST) {
-    request.allowCrossSiteCredentials = true;
+    // It appears UTCTiming requests are considered MANIFEST type requests
+    if (request.uris[0].indexOf('servertime') == -1) {
+      request.allowCrossSiteCredentials = true;
+    }
+    else {
+      request.allowCrossSiteCredentials = false;
+    }
   }
 
   if (type == shaka.net.NetworkingEngine.RequestType.LICENSE) {
