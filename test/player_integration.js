@@ -164,6 +164,28 @@ describe('Player', function() {
   });
 
   describe('plays', function() {
+    it('while external text tracks', function(done) {
+      player.load('test:sintel_no_text_compiled').then(function() {
+        // For some reason, using path-absolute URLs (i.e. without the hostname)
+        // like this doesn't work on Safari.  So manually resolve the URL.
+        var locationUri = new goog.Uri(location.href);
+        var partialUri = new goog.Uri('/base/test/test/assets/text-clip.vtt');
+        var absoluteUri = locationUri.resolve(partialUri);
+        player.addTextTrack(absoluteUri.toString(), 'en', 'subtitles',
+                            'text/vtt');
+
+        video.play();
+        return Util.delay(5);
+      }).then(function() {
+        var textTracks = player.getTextTracks();
+        expect(textTracks).toBeTruthy();
+        expect(textTracks.length).toBe(1);
+
+        expect(textTracks[0].active).toBe(true);
+        expect(textTracks[0].language).toEqual('en');
+      }).catch(fail).then(done);
+    });
+
     window.shakaAssets.testAssets.forEach(function(asset) {
       if (asset.disabled) return;
 

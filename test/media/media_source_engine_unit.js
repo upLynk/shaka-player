@@ -30,22 +30,22 @@ describe('MediaSourceEngine', function() {
   beforeAll(function() {
     Util = shaka.test.Util;
     ContentType = shaka.util.ManifestParserUtils.ContentType;
-    originalIsTypeSupported = window.MediaSource.prototype.isTypeSupported;
+    originalIsTypeSupported = window.MediaSource.isTypeSupported;
     // Since this is not an integration test, we don't want MediaSourceEngine to
     // fail assertions based on browser support for types.  Pretend that all
     // video and audio types are supported.
-    window.MediaSource.prototype.isTypeSupported = function(mimeType) {
+    window.MediaSource.isTypeSupported = function(mimeType) {
       var type = mimeType.split('/')[0];
       return type == 'video' || type == 'audio';
     };
 
-    originalTextEngine = shaka.media.TextEngine;
-    shaka.media.TextEngine = createMockTextEngineCtor();
+    originalTextEngine = shaka.text.TextEngine;
+    shaka.text.TextEngine = createMockTextEngineCtor();
   });
 
   afterAll(function() {
-    window.MediaSource.prototype.isTypeSupported = originalIsTypeSupported;
-    shaka.media.TextEngine = originalTextEngine;
+    window.MediaSource.isTypeSupported = originalIsTypeSupported;
+    shaka.text.TextEngine = originalTextEngine;
   });
 
   beforeEach(/** @suppress {invalidCasts} */ function() {
@@ -87,7 +87,7 @@ describe('MediaSourceEngine', function() {
       mediaSourceEngine.init(initObject);
       expect(mockMediaSource.addSourceBuffer).toHaveBeenCalledWith('audio/foo');
       expect(mockMediaSource.addSourceBuffer).toHaveBeenCalledWith('video/foo');
-      expect(shaka.media.TextEngine).not.toHaveBeenCalled();
+      expect(shaka.text.TextEngine).not.toHaveBeenCalled();
     });
 
     it('creates TextEngines for text types', function() {
@@ -97,7 +97,7 @@ describe('MediaSourceEngine', function() {
       initObject[ContentType.TEXT] = 'text/foo';
       mediaSourceEngine.init(initObject);
       expect(mockMediaSource.addSourceBuffer).not.toHaveBeenCalled();
-      expect(shaka.media.TextEngine).toHaveBeenCalled();
+      expect(shaka.text.TextEngine).toHaveBeenCalled();
     });
   });
 

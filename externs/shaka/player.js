@@ -140,7 +140,9 @@ shakaExtern.Stats;
  *   audioCodec: ?string,
  *   videoCodec: ?string,
  *   primary: boolean,
- *   roles: !Array.<string>
+ *   roles: !Array.<string>,
+ *   videoId: ?number,
+ *   audioId: ?number
  * }}
  *
  * @description
@@ -190,6 +192,10 @@ shakaExtern.Stats;
  *   cannot be satisfied.
  * @property {!Array.<string>} roles
  *   The roles of the track, e.g. 'main', 'caption', or 'commentary'.
+ * @property {?number} videoId
+ *   (only for variant tracks) The video stream id.
+ * @property {?number} audioId
+ *   (only for variant tracks) The audio stream id.
  * @exportDoc
  */
 shakaExtern.Track;
@@ -378,8 +384,10 @@ shakaExtern.DashContentProtectionCallback;
  *   audio.
  *   <i>Defaults to '', i.e., no specific robustness required.</i> <br>
  * @property {Uint8Array} serverCertificate
- *   <i>Defaults to null, i.e., certificate will be requested from the license
- *   server if required.</i> <br>
+ *   <i>Defaults to null.</i> <br>
+ *   <i>An empty certificate (byteLength 0) will be treated as null.</i> <br>
+ *   <i>A certificate will be requested from the license server if
+ *   required.</i> <br>
  *   A key-system-specific server certificate used to encrypt license requests.
  *   Its use is optional and is meant as an optimization to avoid a round-trip
  *   to request a certificate.
@@ -489,6 +497,7 @@ shakaExtern.ManifestConfiguration;
 /**
  * @typedef {{
  *   retryParameters: shakaExtern.RetryParameters,
+ *   infiniteRetriesForLiveStreams: boolean,
  *   rebufferingGoal: number,
  *   bufferingGoal: number,
  *   bufferBehind: number,
@@ -503,6 +512,9 @@ shakaExtern.ManifestConfiguration;
  *
  * @property {shakaExtern.RetryParameters} retryParameters
  *   Retry parameters for segment requests.
+ * @property {boolean} infiniteRetriesForLiveStreams
+ *   If true, will retry infinitely on network errors, for live streams only.
+ *   Defaults to true.
  * @property {number} rebufferingGoal
  *   The minimum number of seconds of content that the StreamingEngine must
  *   buffer before it can begin playback or can continue playback after it has
@@ -540,14 +552,14 @@ shakaExtern.StreamingConfiguration;
 
 /**
  * @typedef {{
- *   manager: shakaExtern.AbrManager,
  *   enabled: boolean,
  *   defaultBandwidthEstimate: number,
- *   restrictions: shakaExtern.Restrictions
+ *   restrictions: shakaExtern.Restrictions,
+ *   switchInterval: number,
+ *   bandwidthUpgradeTarget: number,
+ *   bandwidthDowngradeTarget: number
  * }}
  *
- * @property {shakaExtern.AbrManager} manager
- *   The AbrManager instance.
  * @property {boolean} enabled
  *   If true, enable adaptation by the current AbrManager.  Defaults to true.
  * @property {number} defaultBandwidthEstimate
@@ -557,6 +569,15 @@ shakaExtern.StreamingConfiguration;
  *   The restrictions to apply to ABR decisions.  The AbrManager will not
  *   choose any streams that do not meet these restrictions.  (Note that
  *   they can still be chosen by the application)
+ * @property {number} switchInterval
+ *   The minimum amount of time that must pass between switches, in
+ *   seconds. This keeps us from changing too often and annoying the user.
+ * @property {number} bandwidthUpgradeTarget
+ *   The fraction of the estimated bandwidth which we should try to use when
+ *   upgrading.
+ * @property {number} bandwidthDowngradeTarget
+ *   The largest fraction of the estimated bandwidth we should use. We should
+ *   downgrade to avoid this.
  * @exportDoc
  */
 shakaExtern.AbrConfiguration;
@@ -567,10 +588,13 @@ shakaExtern.AbrConfiguration;
  *   drm: shakaExtern.DrmConfiguration,
  *   manifest: shakaExtern.ManifestConfiguration,
  *   streaming: shakaExtern.StreamingConfiguration,
+ *   abrFactory: shakaExtern.AbrManager.Factory,
  *   abr: shakaExtern.AbrConfiguration,
  *   preferredAudioLanguage: string,
  *   preferredTextLanguage: string,
- *   restrictions: shakaExtern.Restrictions
+ *   restrictions: shakaExtern.Restrictions,
+ *   playRangeStart: number,
+ *   playRangeEnd: number
  * }}
  *
  * @property {shakaExtern.DrmConfiguration} drm
@@ -579,6 +603,8 @@ shakaExtern.AbrConfiguration;
  *   Manifest configuration and settings.
  * @property {shakaExtern.StreamingConfiguration} streaming
  *   Streaming configuration and settings.
+ * @property {shakaExtern.AbrManager.Factory} abrFactory
+ *   A factory to construct an abr manager.
  * @property {shakaExtern.AbrConfiguration} abr
  *   ABR configuration and settings.
  * @property {string} preferredAudioLanguage
@@ -593,6 +619,12 @@ shakaExtern.AbrConfiguration;
  * @property {shakaExtern.Restrictions} restrictions
  *   The application restrictions to apply to the tracks.  The track must
  *   meet all the restrictions to be playable.
+ * @property {number} playRangeStart
+ *   Optional playback and seek start time in seconds. Defaults to 0 if
+ *   not provided.
+ * @property {number} playRangeEnd
+ *   Optional playback and seek end time in seconds. Defaults to the end of
+ *   the presentation if not provided.
  * @exportDoc
  */
 shakaExtern.PlayerConfiguration;
