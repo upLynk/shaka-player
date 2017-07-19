@@ -16,21 +16,24 @@
  */
 
 describe('Storage', function() {
-  var originalSupportsStorageEngine;
-  var originalCreateStorageEngine;
-  var SegmentReference;
-  var fakeStorageEngine;
-  var storage;
-  var player;
-  var netEngine;
+  /** @const */
+  var SegmentReference = shaka.media.SegmentReference;
 
-  beforeAll(function() {
-    SegmentReference = shaka.media.SegmentReference;
-    originalSupportsStorageEngine =
-        shaka.offline.OfflineUtils.supportsStorageEngine;
-    originalCreateStorageEngine =
-        shaka.offline.OfflineUtils.createStorageEngine;
-  });
+  /** @const */
+  var originalSupportsStorageEngine =
+      shaka.offline.OfflineUtils.supportsStorageEngine;
+  /** @const */
+  var originalCreateStorageEngine =
+      shaka.offline.OfflineUtils.createStorageEngine;
+
+  /** @type {shaka.test.MemoryDBEngine} */
+  var fakeStorageEngine;
+  /** @type {!shaka.offline.Storage} */
+  var storage;
+  /** @type {!shaka.Player} */
+  var player;
+  /** @type {!shaka.test.FakeNetworkingEngine} */
+  var netEngine;
 
   afterAll(function() {
     shaka.offline.OfflineUtils.supportsStorageEngine =
@@ -107,7 +110,8 @@ describe('Storage', function() {
             codecs: 'vorbis',
             primary: true,
             segments: [],
-            roles: []
+            roles: [],
+            channelsCount: null
           }
         ]
       }],
@@ -147,7 +151,10 @@ describe('Storage', function() {
         videoCodec: 'avc1.4d401f',
         roles: [],
         videoId: 0,
-        audioId: 1
+        audioId: 1,
+        channelsCount: null,
+        audioBandwidth: null,
+        videoBandwidth: null
       }
     ];
     Promise
@@ -177,16 +184,19 @@ describe('Storage', function() {
   });
 
   describe('store', function() {
-    var originalWarning;
-    var manifest;
-    var tracks;
-    var drmEngine;
-    var stream1Index;
-    var stream2Index;
+    /** @const */
+    var originalWarning = shaka.log.warning;
 
-    beforeAll(function() {
-      originalWarning = shaka.log.warning;
-    });
+    /** @type {shakaExtern.Manifest} */
+    var manifest;
+    /** @type {!Array.<shakaExtern.Track>} */
+    var tracks;
+    /** @type {!shaka.test.FakeDrmEngine} */
+    var drmEngine;
+    /** @type {!shaka.media.SegmentIndex} */
+    var stream1Index;
+    /** @type {!shaka.media.SegmentIndex} */
+    var stream2Index;
 
     beforeEach(function() {
       drmEngine = new shaka.test.FakeDrmEngine();
@@ -202,12 +212,18 @@ describe('Storage', function() {
       tracks = getVariantTracks(manifest.periods[0], null, null);
       // The expected tracks we get back from the stored version of the content
       // will have 0 for bandwidth, so adjust the tracks list to match.
-      tracks.forEach(function(t) { t.bandwidth = 0; });
+      tracks.forEach(function(t) {
+        t.bandwidth = 0;
+        t.audioBandwidth = null;
+        t.videoBandwidth = null;
+      });
 
       storage.loadInternal = function() {
-        return Promise.resolve({
-          manifest: manifest,
-          drmEngine: drmEngine
+        return Promise.resolve().then(function() {
+          return {
+            manifest: manifest,
+            drmEngine: drmEngine
+          };
         });
       };
 
@@ -263,7 +279,7 @@ describe('Storage', function() {
       });
 
       var warning = jasmine.createSpy('shaka.log.warning');
-      shaka.log.warning = warning;
+      shaka.log.warning = shaka.test.Util.spyFunc(warning);
       storage.store('')
           .then(function(data) {
             expect(data).toBeTruthy();
@@ -324,8 +340,13 @@ describe('Storage', function() {
       var drmInfo = {
         keySystem: 'com.example.abc',
         licenseServerUri: 'http://example.com',
-        persistentStateRequire: true,
-        audioRobustness: 'HARDY'
+        persistentStateRequired: true,
+        distinctiveIdentifierRequired: false,
+        initData: null,
+        keyIds: null,
+        serverCertificate: null,
+        audioRobustness: 'HARDY',
+        videoRobustness: 'OTHER'
       };
       drmEngine.setDrmInfo(drmInfo);
       drmEngine.setSessionIds(['abcd']);
@@ -389,8 +410,13 @@ describe('Storage', function() {
       var drmInfo = {
         keySystem: 'com.example.abc',
         licenseServerUri: 'http://example.com',
-        persistentStateRequire: true,
-        audioRobustness: 'HARDY'
+        persistentStateRequired: true,
+        distinctiveIdentifierRequired: false,
+        keyIds: null,
+        initData: null,
+        serverCertificate: null,
+        audioRobustness: 'HARDY',
+        videoRobustness: 'OTHER'
       };
       drmEngine.setDrmInfo(drmInfo);
       drmEngine.setSessionIds([]);
@@ -455,7 +481,7 @@ describe('Storage', function() {
             size: 150,
             expiration: Infinity,
             tracks: tracks,
-            appMetadata: undefined
+            appMetadata: {}
           });
 
           switch (progress.calls.count()) {
@@ -510,7 +536,7 @@ describe('Storage', function() {
             size: jasmine.any(Number),
             expiration: Infinity,
             tracks: tracks,
-            appMetadata: undefined
+            appMetadata: {}
           });
 
           switch (progress.calls.count()) {
@@ -712,6 +738,7 @@ describe('Storage', function() {
     });  // describe('segments')
 
     describe('default track selection callback', function() {
+      /** @type {!Array.<shakaExtern.Track>} */
       var allTextTracks;
 
       beforeEach(function() {
@@ -771,14 +798,16 @@ describe('Storage', function() {
             manifest.periods[0], null);
 
         storage.loadInternal = function() {
-          return Promise.resolve({
-            manifest: manifest,
-            drmEngine: drmEngine
+          return Promise.resolve().then(function() {
+            return {
+              manifest: manifest,
+              drmEngine: /** @type {!shaka.media.DrmEngine} */ (drmEngine)
+            };
           });
         };
 
         // Use the default track selection callback.
-        storage.configure({ trackSelectionCallback: undefined });
+        storage.configure({trackSelectionCallback: undefined});
       });
 
       function getVariants(data) {
@@ -809,7 +838,7 @@ describe('Storage', function() {
         }
 
         var warning = jasmine.createSpy('shaka.log.warning');
-        shaka.log.warning = warning;
+        shaka.log.warning = shaka.test.Util.spyFunc(warning);
 
         // An exact match is available for en-US, en-GB, and en.
         // Test all three to show that we are not just choosing the first loose
@@ -869,9 +898,47 @@ describe('Storage', function() {
         }).catch(fail).then(done);
       });
     });  // describe('default track selection callback')
+
+    describe('temporary license', function() {
+      /** @type {shakaExtern.DrmInfo} */
+      var drmInfo;
+
+      beforeEach(function() {
+        drmInfo = {
+          keySystem: 'com.example.abc',
+          licenseServerUri: 'http://example.com',
+          persistentStateRequired: false,
+          distinctiveIdentifierRequired: false,
+          keyIds: [],
+          initData: null,
+          serverCertificate: null,
+          audioRobustness: 'HARDY',
+          videoRobustness: 'OTHER'
+        };
+        drmEngine.setDrmInfo(drmInfo);
+        drmEngine.setSessionIds(['abcd']);
+        storage.configure({usePersistentLicense: false});
+      });
+
+      it('does not store offline sessions', function(done) {
+        storage.store('')
+            .then(function(data) {
+              expect(data.offlineUri).toBe('offline:0');
+              return fakeStorageEngine.get('manifest', 0);
+            })
+            .then(function(manifestDb) {
+              expect(manifestDb).toBeTruthy();
+              expect(manifestDb.drmInfo).toEqual(drmInfo);
+              expect(manifestDb.sessionIds.length).toEqual(0);
+            })
+            .catch(fail)
+            .then(done);
+      });
+    }); // describe('temporary license')
   });  // describe('store')
 
   describe('remove', function() {
+    /** @type {number} */
     var segmentId;
 
     beforeEach(function() {
@@ -963,6 +1030,24 @@ describe('Storage', function() {
           .then(done);
     });
 
+    it('will delete content with a temporary license', function(done) {
+      storage.configure({usePersistentLicense: false});
+      var manifestId = 0;
+      createAndInsertSegments(manifestId, 5)
+          .then(function(refs) {
+            var manifest = createManifest(manifestId);
+            manifest.periods[0].streams.push({segments: refs});
+            return fakeStorageEngine.insert('manifest', manifest);
+          })
+          .then(function() {
+            expectDatabaseCount(1, 5);
+            return removeManifest(manifestId);
+          })
+          .then(function() { expectDatabaseCount(0, 0); })
+          .catch(fail)
+          .then(done);
+    });
+
     it('will not delete other manifest\'s segments', function(done) {
       var manifestId1 = 1;
       var manifestId2 = 2;
@@ -1027,7 +1112,8 @@ describe('Storage', function() {
     });
 
     it('throws an error if the URI is malformed', function(done) {
-      var bogusContent = {offlineUri: 'foo:bar'};
+      var bogusContent =
+          /** @type {shakaExtern.StoredContent} */ ({offlineUri: 'foo:bar'});
       storage.remove(bogusContent).then(fail).catch(function(error) {
         var expectedError = new shaka.util.Error(
             shaka.util.Error.Severity.CRITICAL,
@@ -1069,7 +1155,8 @@ describe('Storage', function() {
      * @return {!Promise}
      */
     function removeManifest(manifestId) {
-      return storage.remove({offlineUri: 'offline:' + manifestId});
+      return storage.remove(/** @type {shakaExtern.StoredContent} */ (
+          {offlineUri: 'offline:' + manifestId}));
     }
 
     function createManifest(manifestId) {

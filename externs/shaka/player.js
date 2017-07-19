@@ -24,7 +24,8 @@
  *   timestamp: number,
  *   id: number,
  *   type: string,
- *   fromAdaptation: boolean
+ *   fromAdaptation: boolean,
+ *   bandwidth: ?number
  * }}
  *
  * @property {number} timestamp
@@ -33,13 +34,15 @@
  * @property {number} id
  *   The id of the track that was chosen.
  * @property {string} type
- *   The type of stream chosen ('variant' or 'text')
+ *   The type of track chosen ('variant' or 'text')
  * @property {boolean} fromAdaptation
  *   True if the choice was made by AbrManager for adaptation; false if it
  *   was made by the application through selectTrack.
+ * @property {?number} bandwidth
+ *   The bandwidth of the chosen track (null for text).
  * @exportDoc
  */
-shakaExtern.StreamChoice;
+shakaExtern.TrackChoice;
 
 
 /**
@@ -78,7 +81,7 @@ shakaExtern.StateChange;
  *   playTime: number,
  *   bufferingTime: number,
  *
- *   switchHistory: !Array.<shakaExtern.StreamChoice>,
+ *   switchHistory: !Array.<shakaExtern.TrackChoice>,
  *   stateHistory: !Array.<shakaExtern.StateChange>
  * }}
  *
@@ -112,7 +115,7 @@ shakaExtern.StateChange;
  * @property {number} bufferingTime
  *   The total time spent in a buffering state in seconds.
  *
- * @property {!Array.<shakaExtern.StreamChoice>} switchHistory
+ * @property {!Array.<shakaExtern.TrackChoice>} switchHistory
  *   A history of the stream changes.
  * @property {!Array.<shakaExtern.StateChange>} stateHistory
  *   A history of the state changes.
@@ -142,7 +145,10 @@ shakaExtern.Stats;
  *   primary: boolean,
  *   roles: !Array.<string>,
  *   videoId: ?number,
- *   audioId: ?number
+ *   audioId: ?number,
+ *   channelsCount: ?number,
+ *   audioBandwidth: ?number,
+ *   videoBandwidth: ?number
  * }}
  *
  * @description
@@ -182,7 +188,7 @@ shakaExtern.Stats;
  *   The audio/video codecs string provided in the manifest, if present.
  * @property {?string} audioCodec
  *   The audio codecs string provided in the manifest, if present.
-  * @property {?string} videoCodec
+ * @property {?string} videoCodec
  *   The video codecs string provided in the manifest, if present.
  * @property {boolean} primary
  *   True indicates that this in the primary language for the content.
@@ -196,6 +202,12 @@ shakaExtern.Stats;
  *   (only for variant tracks) The video stream id.
  * @property {?number} audioId
  *   (only for variant tracks) The audio stream id.
+ * @property {?number} channelsCount
+ *   The count of the audio track channels.
+ * @property {?number} audioBandwidth
+ *   (only for variant tracks) The audio stream's bandwidth if known.
+ * @property {?number} videoBandwidth
+ *   (only for variant tracks) The video stream's bandwidth if known.
  * @exportDoc
  */
 shakaExtern.Track;
@@ -594,7 +606,8 @@ shakaExtern.AbrConfiguration;
  *   preferredTextLanguage: string,
  *   restrictions: shakaExtern.Restrictions,
  *   playRangeStart: number,
- *   playRangeEnd: number
+ *   playRangeEnd: number,
+ *   textDisplayFactory: shakaExtern.TextDisplayer.Factory
  * }}
  *
  * @property {shakaExtern.DrmConfiguration} drm
@@ -625,6 +638,8 @@ shakaExtern.AbrConfiguration;
  * @property {number} playRangeEnd
  *   Optional playback and seek end time in seconds. Defaults to the end of
  *   the presentation if not provided.
+ * @property {shakaExtern.TextDisplayer.Factory} textDisplayFactory
+ *   A factory to construct text displayer.
  * @exportDoc
  */
 shakaExtern.PlayerConfiguration;

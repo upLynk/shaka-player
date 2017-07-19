@@ -27,6 +27,16 @@ requirement: {
   whitelist_regexp: 'test/*'
 }
 
+# Ban accessing members of unknown types.
+requirement: {
+  type: CUSTOM
+  java_class: 'com.google.javascript.jscomp.ConformanceRules$'
+              'BanUnknownTypedClassPropsReferences'
+  error_message: 'Using properties of unknown types is not allowed: add an '
+                 'explicit type to the variable.'
+  whitelist_regexp: 'demo/*'
+}
+
 requirement: {
   type: BANNED_CODE_PATTERN
   value: 'function template() { throw new Error(); }'
@@ -83,6 +93,14 @@ requirement: {
 }
 
 
+#Disallow classList toggle.
+requirement: {
+  type: BANNED_PROPERTY_CALL
+  value: 'DOMTokenList.prototype.toggle'
+  error_message: 'classList toggle is not supported in IE11'
+}
+
+
 # Disallow ES6 methods.
 requirement: {
   type: BANNED_PROPERTY
@@ -93,6 +111,7 @@ requirement: {
   value: 'Array.prototype.findIndex'
   value: 'Array.prototype.copyWithin'
   value: 'Array.prototype.fill'
+  value: 'Array.prototype.includes'
   error_message: 'ES6 Array methods are not allowed '
                  'because they are not supported in IE11'
 }
