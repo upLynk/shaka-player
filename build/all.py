@@ -17,12 +17,17 @@
 """Builds the dependencies, runs the checks, and compiles the library."""
 
 import argparse
+
+import apps
 import build
 import check
+import compiler
 import docs
 import gendeps
 import shakaBuildHelpers
 
+import os
+import re
 
 def main(args):
   parser = argparse.ArgumentParser(
@@ -54,24 +59,40 @@ def main(args):
 
   parsed_args = parser.parse_args(args)
 
-  code = gendeps.gen_deps([])
-  if code != 0:
-    return code
+  if gendeps.main([]) != 0:
+    return 1
 
-  check_args = ['--fix'] if parsed_args.fix else []
-  code = check.main(check_args)
-  if code != 0:
-    return code
+  check_args = []
+  if parsed_args.fix:
+    check_args += ['--fix']
+  if parsed_args.force:
+    check_args += ['--force']
+  if check.main(check_args) != 0:
+    return 1
 
   docs_args = []
-  code = docs.build_docs(docs_args)
-  if code != 0:
-    return code
+  if parsed_args.force:
+    docs_args += ['--force']
+  if docs.main(docs_args) != 0:
+    return 1
 
-  build_args = ['--name', 'compiled', '+@complete']
+  match = re.compile(r'.*\.less$')
+  base = shakaBuildHelpers.get_source_base()
+  main_less_src = os.path.join(base, 'ui', 'controls.less')
+  all_less_srcs = shakaBuildHelpers.get_all_files(
+      os.path.join(base, 'ui'), match)
+  output = os.path.join(base, 'dist', 'controls.css')
+
+  less = compiler.Less(main_less_src, all_less_srcs, output)
+  if not less.compile(parsed_args.force):
+    return 1
+
+  build_args_with_ui = ['--name', 'ui', '+@complete']
+  build_args_without_ui = ['--name', 'compiled', '+@complete', '-@ui']
 
   if parsed_args.force:
-    build_args += ['--force']
+    build_args_with_ui += ['--force']
+    build_args_without_ui += ['--force']
 
   # Create the list of build modes to build with. If the list is empty
   # by the end, then populate it with every mode.
@@ -83,16 +104,19 @@ def main(args):
   if not modes:
     modes += ['debug', 'release']
 
-  result = 0
-
   for mode in modes:
-    result = build.main(build_args + ['--mode', mode])
+    # Complete build includes the UI library, but it is optional and player lib
+    # should build and work without it as well.
+    # First, build the full build (UI included) and then build excluding UI.
+    for build_args in [build_args_with_ui, build_args_without_ui]:
+      if build.main(build_args + ['--mode', mode]) != 0:
+        return 1
 
-    # If a build fails then there is no reason to build the other modes.
-    if result:
-      break
+    is_debug = mode == 'debug'
+    if not apps.build_all(parsed_args.force, is_debug):
+      return 1
 
-  return result
+  return 0
 
 if __name__ == '__main__':
   shakaBuildHelpers.run_main(main)

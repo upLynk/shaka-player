@@ -162,20 +162,18 @@ shakaDemo.storeDeleteAsset_ = function() {
   shakaDemo.updateButtons_(false);
 
   let assetList = document.getElementById('assetList');
-  let progress = document.getElementById('progress');
   let option = assetList.options[assetList.selectedIndex];
 
-  progress.textContent = '0';
-
+  // This will use the configuration from the player, so we need to set all
+  // our configurations on the player and not here.
   let storage = new shaka.offline.Storage(
       /** @type {!shaka.Player} */ (shakaDemo.localPlayer_));
-  storage.configure({
-    offline: {
-      progressCallback: (data, percent) => {
-        progress.textContent = (percent * 100).toFixed(2);
-      },
-    },
-  });
+
+
+  // Clear the progress display so that we will start at zero.
+  let percent = 0;
+  let progress = document.getElementById('progress');
+  progress.textContent = (percent * 100).toFixed(2);
 
   let p;
   if (option.storedContent) {
@@ -202,23 +200,33 @@ shakaDemo.storeDeleteAsset_ = function() {
       return shakaDemo.refreshAssetList_();
     });
   } else {
+    let configureCertificate = Promise.resolve();
+
     let asset = shakaDemo.preparePlayer_(option.asset);
-    let nameField = document.getElementById('offlineName').value;
-    let assetName = asset.name ? '[OFFLINE] ' + asset.name : null;
-    let metadata = {name: assetName || nameField || asset.manifestUri};
-    p = storage.store(asset.manifestUri, metadata).then(function() {
-      if (option.asset) {
-        option.isStored = true;
-      }
-      return shakaDemo.refreshAssetList_().then(function() {
-        // Auto-select offline copy of asset after storing.
-        let group = shakaDemo.offlineOptGroup_;
-        for (let i = 0; i < group.childNodes.length; i++) {
-          let option = group.childNodes[i];
-          if (option.textContent == assetName) {
-            assetList.selectedIndex = option.index;
-          }
+
+    if (asset.certificateUri) {
+      configureCertificate = shakaDemo.requestCertificate_(asset.certificateUri)
+        .then(shakaDemo.configureCertificate_);
+    }
+
+    p = configureCertificate.then(function() {
+      let nameField = document.getElementById('offlineName').value;
+      let assetName = asset.name ? '[OFFLINE] ' + asset.name : null;
+      let metadata = {name: assetName || nameField || asset.manifestUri};
+        return storage.store(asset.manifestUri, metadata).then(function() {
+        if (option.asset) {
+          option.isStored = true;
         }
+        return shakaDemo.refreshAssetList_().then(function() {
+          // Auto-select offline copy of asset after storing.
+          let group = shakaDemo.offlineOptGroup_;
+          for (let i = 0; i < group.childNodes.length; i++) {
+            let option = group.childNodes[i];
+            if (option.textContent == assetName) {
+              assetList.selectedIndex = option.index;
+            }
+          }
+        });
       });
     });
   }

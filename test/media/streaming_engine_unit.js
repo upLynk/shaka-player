@@ -631,7 +631,7 @@ describe('StreamingEngine', function() {
         if (playheadTime == 20) {
           mediaSourceEngine.clear.calls.reset();
           mediaSourceEngine.init.calls.reset();
-          streamingEngine.loadNewTextStream(textStream1);
+          streamingEngine.loadNewTextStream(textStream2);
           expect(mediaSourceEngine.clear).toHaveBeenCalledWith('text');
 
           const expectedObject = new Map();

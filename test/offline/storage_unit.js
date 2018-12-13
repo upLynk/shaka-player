@@ -77,7 +77,7 @@ describe('Storage', function() {
       });
 
       // Ask storage to erase everything.
-      await shaka.offline.Storage.deleteAll(player);
+      await shaka.offline.Storage.deleteAll();
 
       // Make sure that all content that was previously found is no gone.
       await withStorage(async (storage) => {
@@ -85,53 +85,6 @@ describe('Storage', function() {
         expect(content).toBeTruthy();
         expect(content.length).toBe(0);
       });
-    }));
-
-    drmIt('removes licenses', drmCheckAndRun(async function() {
-      const TestManifestParser = shaka.test.TestScheme.ManifestParser;
-      const manifestUri = 'test:sintel-enc';
-
-      // PART 1 - Store a piece of content.
-      let storedContent = await withStorage((storage) => {
-        return storage.store(manifestUri, noMetadata, TestManifestParser);
-      });
-
-      let offlineUri = shaka.offline.OfflineUri.parse(storedContent.offlineUri);
-      goog.asserts.assert(offlineUri, 'Store should give us a valid uri');
-      expect(offlineUri).toBeTruthy();
-      expect(offlineUri.isManifest()).toBeTruthy();
-
-      /** @type {!shaka.extern.Manifest} */
-      let manifest = await getStoredManifest(offlineUri);
-      expect(manifest);
-      expect(manifest.offlineSessionIds).toBeTruthy();
-      expect(manifest.offlineSessionIds.length).toBeTruthy();
-
-      // PART 2 - Check that the licences are stored.
-      await withDrm(player, manifest, (drm) => {
-        return Promise.all(manifest.offlineSessionIds.map(async (session) => {
-          let foundSession = await loadOfflineSession(drm, session);
-          expect(foundSession).toBeTruthy();
-        }));
-      });
-
-      // PART 3 - Ask storage to erase everything.
-      await shaka.offline.Storage.deleteAll(player);
-
-      // PART 4 - Check that the licenses were removed.
-      try {
-        await withDrm(player, manifest, (drm) => {
-          return Promise.all(manifest.offlineSessionIds.map(async (session) => {
-            let notFoundSession = await loadOfflineSession(drm, session);
-            expect(notFoundSession).toBeFalsy();
-          }));
-        });
-
-        return Promise.reject('Expected drm to throw OFFLINE_SESSION_REMOVED');
-      } catch (e) {
-        expect(e).toBeTruthy();
-        expect(e.code).toBe(shaka.util.Error.Code.OFFLINE_SESSION_REMOVED);
-      }
     }));
 
     /**
@@ -164,7 +117,14 @@ describe('Storage', function() {
       await player.destroy();
     });
 
-    drmIt('removes persistent license', drmCheckAndRun(async function() {
+    // TODO: Still failing in Chrome canary 73 on 2018-12-12.
+    // Some combination of these bugs is preventing this test from working:
+    //   http://crbug.com/690583
+    //   http://crbug.com/887535
+    //   http://crbug.com/887635
+    //   http://crbug.com/883895
+    quarantinedIt('removes persistent license',
+        drmCheckAndRun(async function() {
       const TestManifestParser = shaka.test.TestScheme.ManifestParser;
 
       // PART 1 - Download and store content that has a persistent license
@@ -209,11 +169,14 @@ describe('Storage', function() {
       }
     }));
 
-    // TODO: This test doesn't work on Chrome since it will hang closing the
-    // offline session if there is a pending release message.  We work around
-    // this with a timeout, but that means we'll get an error later trying to
-    // open the session multiple times.  See https://crbug.com/690583.
-    xit('defers removing licenses on error', drmCheckAndRun(async function() {
+    // TODO: Still failing in Chrome canary 73 on 2018-12-12.
+    // Some combination of these bugs is preventing this test from working:
+    //   http://crbug.com/690583
+    //   http://crbug.com/887535
+    //   http://crbug.com/887635
+    //   http://crbug.com/883895
+    quarantinedIt('defers removing licenses on error',
+        drmCheckAndRun(async function() {
       const TestManifestParser = shaka.test.TestScheme.ManifestParser;
       const getEmeSessions = async () => {
         /** @type {!shaka.offline.StorageMuxer} */
@@ -1360,7 +1323,6 @@ describe('Storage', function() {
   function eraseStorage() {
     let muxer = new shaka.offline.StorageMuxer();
     return shaka.util.Destroyer.with([muxer], async () => {
-      await muxer.init();
       await muxer.erase();
     });
   }

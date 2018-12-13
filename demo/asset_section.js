@@ -211,7 +211,7 @@ shakaDemo.preparePlayer_ = function(asset) {
     'org.w3.clearkey',
   ];
   let config = /** @type {shaka.extern.PlayerConfiguration} */(
-      {abr: {}, streaming: {}, manifest: {dash: {}}});
+      {abr: {}, streaming: {}, manifest: {dash: {}}, offline: {}});
   config.drm = /** @type {shaka.extern.DrmConfiguration} */({
     advanced: {}});
   commonDrmSystems.forEach(function(system) {
@@ -241,6 +241,12 @@ shakaDemo.preparePlayer_ = function(asset) {
       certificateUri: document.getElementById('certificateInput').value,
     });
   }
+
+  // Any storage operation should update our progress label.
+  config.offline.progressCallback = function(data, percent) {
+    let progress = document.getElementById('progress');
+    progress.textContent = (percent * 100).toFixed(2);
+  };
 
   player.resetConfiguration();
 
@@ -340,6 +346,12 @@ shakaDemo.load = function() {
     // Update the control state in case autoplay is disabled.
     shakaDemo.controls_.loadComplete();
 
+    if (shakaDemo.video_.controls) {
+      shakaDemo.controls_.setEnabledNativeControls(true);
+    } else {
+      shakaDemo.controls_.setEnabledShakaControls(true);
+    }
+
     shakaDemo.hashShouldChange_();
 
     // Set a different poster for audio-only assets.
@@ -383,4 +395,7 @@ shakaDemo.load = function() {
 /** Unload any current asset. */
 shakaDemo.unload = function() {
   shakaDemo.player_.unload();
+  if (!shakaDemo.castProxy_.isCasting()) {
+    shakaDemo.controls_.setEnabledShakaControls(false);
+  }
 };

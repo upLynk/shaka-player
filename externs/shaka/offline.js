@@ -212,6 +212,7 @@ shaka.extern.SegmentDataDB;
  *   sessionId: string,
  *   keySystem: string,
  *   licenseUri: string,
+ *   serverCertificate: Uint8Array,
  *   audioCapabilities: !Array.<MediaKeySystemMediaCapability>,
  *   videoCapabilities: !Array.<MediaKeySystemMediaCapability>
  * }}
@@ -222,6 +223,10 @@ shaka.extern.SegmentDataDB;
  *   The EME key system string the session belongs to.
  * @property {string} licenseUri
  *   The URI for the license server.
+ * @property {Uint8Array} serverCertificate
+ *   A key-system-specific server certificate used to encrypt license requests.
+ *   Its use is optional and is meant as an optimization to avoid a round-trip
+ *   to request a certificate.
  * @property {!Array.<MediaKeySystemMediacapability>} audioCapabilities
  *   The EME audio capabilities used to create the session.
  * @property {!Array.<MediaKeySystemMediacapability>} videoCapabilities
@@ -448,9 +453,11 @@ shaka.extern.StorageMechanism.prototype.getEmeSessionCell = function() {};
 
 
 /**
- * Erase all content from storage and leave storage in an empty state. It is
- * expected that |erase| will be called after |init| and will still be
- * initialized for use after calling |erase|.
+ * Erase all content from storage and leave storage in an empty state. Erase may
+ * be called with or without |init|.  This allows for storage to be wiped in
+ * case of a version mismatch.
+ *
+ * After calling |erase|, the mechanism will be in an initialized state.
  *
  * @return {!Promise}
  */

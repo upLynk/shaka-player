@@ -47,6 +47,7 @@ shakaAssets.Encoder = {
 
 /** @enum {string} */
 shakaAssets.Source = {
+  CUSTOM: 'Custom',
   SHAKA: 'Shaka',
   AXINOM: 'Axinom',
   UNIFIED_STREAMING: 'Unified Streaming',
@@ -103,6 +104,7 @@ shakaAssets.Feature = {
 
   SURROUND: 'surround sound',
 
+  DASH: 'DASH',
   HLS: 'HLS',
 };
 
@@ -132,11 +134,29 @@ shakaAssets.ExtraText;
 
 /**
  * @typedef {{
+ *   icon: string,
+ *   shortName: string,
+ *   description: string
+ * }}
+ *
+ * @property {string} icon
+ *   An URI pointing to an icon.
+ * @property {string} shortName
+ *   A shorter, snappier name for the asset.
+ * @property {string} description
+ *   A line or two of text describing the asset.
+ */
+shakaAssets.FeaturedInfo;
+
+
+/**
+ * @typedef {{
  *   name: string,
  *   manifestUri: string,
  *   certificateUri: (string|undefined),
  *   focus: (boolean|undefined),
  *   disabled: (boolean|undefined),
+ *   featuredInfo: (shakaAssets.FeaturedInfo|undefined),
  *   extraText: (!Array.<shakaAssets.ExtraText>|undefined),
  *
  *   encoder: shakaAssets.Encoder,
@@ -167,6 +187,10 @@ shakaAssets.ExtraText;
  * @property {(boolean|undefined)} disabled
  *   (optional) If true, disables tests for this asset and hides it in the demo
  *   app.
+ * @property {(shakaAssets.FeaturedInfo|undefined)} featuredInfo
+ *   (optional) A structure containing data for the featured panel for this
+ *   asset in the demo app's main panel.
+ *   If not set, this asset will not appear in the main panel.
  * @property {(!Array.<shakaAssets.ExtraText>|undefined)} extraText
  *   (optional) An array of extra text sources (e.g. external captions).
  *
@@ -261,6 +285,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.MULTIPLE_LANGUAGES,
       shakaAssets.Feature.SEGMENT_BASE,
@@ -277,6 +302,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [shakaAssets.KeySystem.WIDEVINE],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.MULTIPLE_LANGUAGES,
       shakaAssets.Feature.SEGMENT_BASE,
@@ -297,6 +323,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [shakaAssets.KeySystem.CLEAR_KEY],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.MULTIPLE_LANGUAGES,
       shakaAssets.Feature.SEGMENT_BASE,
@@ -316,6 +343,11 @@ shakaAssets.testAssets = [
     encoder: shakaAssets.Encoder.SHAKA_PACKAGER,
     source: shakaAssets.Source.SHAKA,
     drm: [],
+    featuredInfo: {
+      icon: 'https://storage.googleapis.com/shaka-asset-icons/angel_one.png',
+      shortName: 'Angel One',
+      description: 'A classic Star Trek TNG episode, presented in HLS.',
+    },
     features: [
       shakaAssets.Feature.HLS,
       shakaAssets.Feature.MP4,
@@ -347,6 +379,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_BASE,
@@ -364,6 +397,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_BASE,
@@ -382,6 +416,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.SEGMENT_BASE,
       shakaAssets.Feature.SUBTITLES,
@@ -398,6 +433,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_BASE,
@@ -413,7 +449,14 @@ shakaAssets.testAssets = [
     encoder: shakaAssets.Encoder.SHAKA_PACKAGER,
     source: shakaAssets.Source.SHAKA,
     drm: [shakaAssets.KeySystem.WIDEVINE],
+    featuredInfo: {
+      icon: 'https://storage.googleapis.com/shaka-asset-icons/sintel.png',
+      shortName: 'Sintel',
+      description: 'A Blender Foundation short film, protected by Widevine ' +
+                   'encryption.',
+    },
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.PSSH,
@@ -436,6 +479,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.EMBEDDED_TEXT,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
@@ -447,6 +491,22 @@ shakaAssets.testAssets = [
     ],
   },
   {
+    name: 'Sintel w/ 44 subtitle languages',
+    manifestUri: 'https://storage.googleapis.com/shaka-demo-assets/sintel-many-subs/dash.mpd',
+
+    encoder: shakaAssets.Encoder.SHAKA_PACKAGER,
+    source: shakaAssets.Source.SHAKA,
+    drm: [],
+    features: [
+      shakaAssets.Feature.DASH,
+      shakaAssets.Feature.HIGH_DEFINITION,
+      shakaAssets.Feature.MP4,
+      shakaAssets.Feature.SEGMENT_BASE,
+      shakaAssets.Feature.SUBTITLES,
+      shakaAssets.Feature.WEBVTT,
+    ],
+  },
+  {
     name: 'Heliocentrism (multicodec, multiperiod)',
     manifestUri: 'https://storage.googleapis.com/shaka-demo-assets/heliocentrism/heliocentrism.mpd',
 
@@ -454,6 +514,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.MULTIPERIOD,
       shakaAssets.Feature.SEGMENT_BASE,
@@ -468,6 +529,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.MULTIPERIOD,
       shakaAssets.Feature.SEGMENT_BASE,
@@ -486,7 +548,13 @@ shakaAssets.testAssets = [
     encoder: shakaAssets.Encoder.SHAKA_PACKAGER,
     source: shakaAssets.Source.SHAKA,
     drm: [],
+    featuredInfo: {
+      icon: 'https://storage.googleapis.com/shaka-asset-icons/audio_only.png',
+      shortName: 'Dig the Uke',
+      description: 'An audio-only presentation performed by Stefan Kartenberg.',
+    },
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_BASE,
       shakaAssets.Feature.WEBM,
@@ -504,6 +572,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [shakaAssets.KeySystem.WIDEVINE],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_BASE,
       shakaAssets.Feature.WEBM,
@@ -520,6 +589,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_BASE,
@@ -535,6 +605,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.SHAKA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_BASE,
       shakaAssets.Feature.SURROUND,
@@ -547,7 +618,13 @@ shakaAssets.testAssets = [
     encoder: shakaAssets.Encoder.SHAKA_PACKAGER,
     source: shakaAssets.Source.SHAKA,
     drm: [],
+    featuredInfo: {
+      icon: 'https://storage.googleapis.com/shaka-asset-icons/shaka.png',
+      shortName: 'Shaka Player History',
+      description: 'A self-indulgent DASH livestream.',
+    },
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.LIVE,
       shakaAssets.Feature.MP4,
@@ -583,6 +660,7 @@ shakaAssets.testAssets = [
       shakaAssets.KeySystem.WIDEVINE,
     ],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.EMBEDDED_TEXT,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
@@ -611,6 +689,7 @@ shakaAssets.testAssets = [
       shakaAssets.KeySystem.WIDEVINE,
     ],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.EMBEDDED_TEXT,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
@@ -640,6 +719,7 @@ shakaAssets.testAssets = [
       shakaAssets.KeySystem.WIDEVINE,
     ],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.EMBEDDED_TEXT,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
@@ -667,6 +747,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.AXINOM,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.EMBEDDED_TEXT,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
@@ -684,6 +765,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.AXINOM,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.EMBEDDED_TEXT,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
@@ -735,6 +817,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.UNIFIED_STREAMING,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_TIMELINE,
@@ -751,6 +834,7 @@ shakaAssets.testAssets = [
       shakaAssets.KeySystem.WIDEVINE,
     ],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.EMBEDDED_TEXT,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
@@ -774,6 +858,7 @@ shakaAssets.testAssets = [
       shakaAssets.KeySystem.PLAYREADY,
     ],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.EMBEDDED_TEXT,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
@@ -795,6 +880,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.UNIFIED_STREAMING,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.EMBEDDED_TEXT,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
@@ -829,6 +915,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.DASH_IF,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.LIVE,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_TIMELINE,
@@ -842,6 +929,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.DASH_IF,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.LIVE,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_TIMELINE,
@@ -855,6 +943,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.DASH_IF,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.LIVE,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.MULTIPERIOD,
@@ -873,6 +962,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Encoder.WOWZA,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.LIVE,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_TIMELINE,
@@ -891,6 +981,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.BITCODIN,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.HIGH_DEFINITION,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_DURATION,
@@ -938,6 +1029,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.NIMBLE_STREAMER,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_TIMELINE,
     ],
@@ -954,6 +1046,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.AZURE_MEDIA_SERVICES,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_TIMELINE,
     ],
@@ -961,9 +1054,6 @@ shakaAssets.testAssets = [
   {
     name: 'Big Buck Bunny',
     manifestUri: 'https://amssamples.streaming.mediaservices.windows.net/622b189f-ec39-43f2-93a2-201ac4e31ce1/BigBuckBunny.ism/manifest(format=mpd-time-csf)',
-    // NOTE: License servers are timing out as of 2016-03-23.
-    // NOTE: Still timing out as of 2016-08-02.
-    disabled: true,
 
     encoder: shakaAssets.Encoder.AZURE_MEDIA_SERVICES,
     source: shakaAssets.Source.AZURE_MEDIA_SERVICES,
@@ -972,6 +1062,7 @@ shakaAssets.testAssets = [
       shakaAssets.KeySystem.WIDEVINE,
     ],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_TIMELINE,
     ],
@@ -1009,6 +1100,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.AZURE_MEDIA_SERVICES,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_TIMELINE,
       shakaAssets.Feature.SUBTITLES,
@@ -1034,6 +1126,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.GPAC,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_DURATION,
     ],
@@ -1046,6 +1139,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.GPAC,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.MULTIPERIOD,
       shakaAssets.Feature.SEGMENT_TEMPLATE_DURATION,
@@ -1059,6 +1153,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.GPAC,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_LIST_DURATION,
     ],
@@ -1076,6 +1171,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.GPAC,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_LIST_DURATION,
     ],
@@ -1088,6 +1184,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.GPAC,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_BASE,
     ],
@@ -1104,6 +1201,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.GPAC,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_DURATION,
     ],
@@ -1120,6 +1218,7 @@ shakaAssets.testAssets = [
     source: shakaAssets.Source.GPAC,
     drm: [],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.SEGMENT_TEMPLATE_DURATION,
     ],
@@ -1139,6 +1238,7 @@ shakaAssets.testAssets = [
       shakaAssets.KeySystem.WIDEVINE,
     ],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.PSSH,
       shakaAssets.Feature.MULTIKEY,
@@ -1165,6 +1265,7 @@ shakaAssets.testAssets = [
       shakaAssets.KeySystem.WIDEVINE,
     ],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.PSSH,
       shakaAssets.Feature.MULTIKEY,
@@ -1189,6 +1290,7 @@ shakaAssets.testAssets = [
       shakaAssets.KeySystem.WIDEVINE,
     ],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.PSSH,
       shakaAssets.Feature.MULTIKEY,
@@ -1214,6 +1316,7 @@ shakaAssets.testAssets = [
       shakaAssets.KeySystem.WIDEVINE,
     ],
     features: [
+      shakaAssets.Feature.DASH,
       shakaAssets.Feature.MP4,
       shakaAssets.Feature.MULTIPLE_LANGUAGES,
       shakaAssets.Feature.SEGMENT_LIST_DURATION,

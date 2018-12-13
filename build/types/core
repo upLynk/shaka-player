@@ -8,9 +8,14 @@
 +../../lib/debug/asserts.js
 +../../lib/debug/log.js
 
++../../lib/deprecate/deprecate.js
++../../lib/deprecate/enforcer.js
++../../lib/deprecate/version.js
+
 +../../lib/media/active_stream_map.js
 +../../lib/media/adaptation_set.js
 +../../lib/media/adaptation_set_criteria.js
++../../lib/media/closed_caption_parser.js
 +../../lib/media/drm_engine.js
 +../../lib/media/gap_jumping_controller.js
 +../../lib/media/manifest_parser.js
@@ -60,6 +65,7 @@
 +../../lib/util/multi_map.js
 +../../lib/util/object_utils.js
 +../../lib/util/operation_manager.js
++../../lib/util/platform.js
 +../../lib/util/player_configuration.js
 +../../lib/util/pssh.js
 +../../lib/util/public_promise.js

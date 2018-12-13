@@ -1,3 +1,92 @@
+## 2.5.0-beta2 (2018-11-09)
+
+Contains everything in v2.4.5, plus...
+
+Bugfixes:
+  - Fix Chromecast receiver id in the demo, broken since v2.5.0-beta
+    - https://github.com/google/shaka-player/issues/1656
+  - Fix multi-period playback issues introduced in v2.5.0-beta
+    - https://github.com/google/shaka-player/issues/1601
+  - Fix seekable range with non-zero start
+    - https://github.com/google/shaka-player/issues/1602
+  - Misc Storage and demo fixes
+  - Fix support for restriction changes after playback
+    - https://github.com/google/shaka-player/issues/1533
+  - Fix TextEngine buffered range calculations
+    - https://github.com/google/shaka-player/issues/1562
+
+New Features:
+  - Add support for CEA captions in DASH
+    - https://github.com/google/shaka-player/issues/1404
+  - Set server certificate before Store and Delete
+    - https://github.com/google/shaka-player/issues/1623
+    - https://github.com/google/shaka-player/pull/1639
+  - Allow deferring deleting offline sessions.
+    - https://github.com/google/shaka-player/issues/1326
+  - Added progress events for Fetch plugin.
+    - https://github.com/google/shaka-player/issues/1504
+  - Add config field to ignore manifest minBufferTime #1547
+    - https://github.com/google/shaka-player/issues/1547
+    - https://github.com/google/shaka-player/pull/1581
+  - Add support for 'individualization-request' messages in EME
+    - https://github.com/google/shaka-player/issues/1565
+
+Docs:
+  - Update Language Normalization Documentation
+
+
+## 2.4.5 (2018-11-09)
+
+Bugfixes:
+  - Fix erasure of the database with storage.deleteAll()
+  - Fix MediaSource tear down race
+  - Fix exception when destroying MediaSourceEngine twice
+  - Fix gap jumping test failures on IE/Edge/Tizen
+  - Fix stalls on Tizen TV
+  - Fix display of external subtitles
+    - https://github.com/google/shaka-player/issues/1596
+  - Fix test failures on Safari
+  - Fix filtering of HLS audio-only content
+  - Preserve bandwidth estimate between loads
+    - https://github.com/google/shaka-player/issues/1366
+  - Retry streaming when we get back online
+    - https://github.com/google/shaka-player/issues/1427
+  - Fix Storage test contamination
+  - Fix advanced DRM settings pollution across key systems
+    - https://github.com/google/shaka-player/issues/1524
+  - Fix TextEngine buffered range calculations
+    - https://github.com/google/shaka-player/issues/1562
+
+New Features:
+  - Optimize processXlinks
+    - https://github.com/google/shaka-player/issues/1640
+  - Add support for Python3 in build scripts
+  - Allow new Periods to add EME init data
+    - https://github.com/google/shaka-player/issues/1360
+  - Add namespace-aware parsing to TTML parser
+    - https://github.com/google/shaka-player/issues/1585
+  - An external Promise polyfill is no longer required!
+
+Demo App:
+  - Show logs prominently in noinput mode
+    - https://github.com/google/shaka-player/issues/1610
+  - Disable uncompiled mode on browsers without async
+  - Restore using Enter key to load asset
+
+Docs:
+  - Fix tracks sorting in Offline tutorial sample code
+    - https://github.com/google/shaka-player/issues/1608
+    - https://github.com/google/shaka-player/pull/1609
+  - Add a note about blank receiver IDs
+  - Rename 'video' to 'mediaElem' to make it clear that audio elements work, too
+    - https://github.com/google/shaka-player/issues/1555
+
+Un-Features:
+  - Un-ship VTTRegion support, which is currently broken in Chrome and does more
+    harm than good
+    - https://github.com/google/shaka-player/issues/1584
+
+
 ## 2.5.0-beta (2018-08-24)
 
 New Features:

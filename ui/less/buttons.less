@@ -1,0 +1,118 @@
+/**
+ * Copyright 2016 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* The main buttons in the UI controls. */
+
+/* The giant play button, which sits inside .shaka-player-button-container and
+ * contains the buffering spinner. */
+.shaka-play-button {
+  /* Button width and height will be changed when the dimensions of the video
+   * change. See shaka.ui.Controls.prototype.resizePlayButton_.
+   * Note that the resizing appears to be broken on IE 11. */
+  width: 61px;
+  height: 61px;
+  /* TODO(b/116328412): resize play button in CSS only, not in JS. */
+
+  /* To be properly positioned in the center, this should have no margin or
+   * padding.  These might have been set for buttons generally by the app or
+   * user-agent. */
+  margin: 0;
+  padding: 0;
+
+  /* This makes the button a circle. */
+  border-radius: 50%;
+
+  /* A small drop shadow below the button. */
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 20px 0px;
+
+  /* No border. */
+  border: none;
+
+  /* The play arrow is a picture. It is treated a background image.
+   * The following settings ensure it shows only once and in the
+   * center of the button. */
+  background-size: 50%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  /* A background color behind the play arrow. */
+  background-color: rgba(255, 255, 255, .9);
+
+  /* Actual icon images for the two states this could be in.
+   * These will be inlined as data URIs when compiled, and so do not need to be
+   * deployed separately from the compiled CSS. */
+  &[icon="play"] {
+    background-image: data-uri('play_arrow.svg');
+  }
+  &[icon="pause"] {
+    background-image: data-uri('pause.svg');
+  }
+}
+
+/* This is a div containing the current time and duration of the video.  It sits
+ * to the left of the control buttons and above (Y axis) the seek bar.
+ * The actual text is inside another div, which is important for click events.
+ * This container will fill space horizontally, but the clickable text inside
+ * will not. */
+.shaka-time-container {
+  /* Use Roboto if available. */
+  font-family: Roboto-Regular, Roboto, sans-serif;
+  font-size: 16px;
+  color: rgb(255, 255, 255);
+
+  /* Make the time container the right size for the text, instead of defaulting
+   * to the same size as the rest of the controls. */
+  height: auto;
+
+  /* Make the container fill space horizontally, but shrink to accommodate
+   * things to the right. */
+  width: 100%;
+  .shrinkable();
+
+  cursor: default;
+  .unselectable();
+}
+
+/* Use a consistent outline focus style across browsers. */
+.shaka-controls-container {
+  button:focus,
+  input:focus {
+    /* Most browsers will fall back to "Highlight" (system setting) color for
+     * the focus outline. */
+    outline: 1px solid Highlight;
+    /* WebKit-based and Blink-based browsers have this as their default outline
+     * color. */
+    outline: 1px solid -webkit-focus-ring-color;
+  }
+
+  /* Disable this Mozilla-specific focus ring, since we have an outline defined
+   * for focus. */
+  button::-moz-focus-inner,
+  input::-moz-focus-outer {
+    outline: none;
+    border: 0;
+  }
+}
+
+/* Outline on focus is important for accessibility, but
+ * it doesn't look great. This removes the outline for
+ * mouse users while leaving it for keyboard users. */
+.shaka-controls-container:not(.shaka-keyboard-navigation) {
+  button:focus,
+  input:focus {
+    outline: none;
+    border: 0;
+  }
+}

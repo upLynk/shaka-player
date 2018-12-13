@@ -559,7 +559,7 @@ shaka.test.ManifestGenerator.prototype.createStream_ =
     emsgSchemeIdUris: null,
     roles: [],
     channelsCount: null,
-    closedCaptions: {},
+    closedCaptions: null,
   };
   return stream;
 };
@@ -619,6 +619,18 @@ shaka.test.ManifestGenerator.prototype.textStream = function(uri) {
         position, startTime, duration, getUris, 0, null);
   }.bind(this));
 
+  return this;
+};
+
+
+/**
+ * Force a delay in createSegmentIndex to delay setup.  This can be useful in
+ * certain tests.
+ *
+ * @return {!shaka.test.ManifestGenerator}
+ */
+shaka.test.ManifestGenerator.prototype.delayCreateSegmentIndex = function() {
+  this.currentStream_().createSegmentIndex = () => shaka.test.Util.delay(1);
   return this;
 };
 
@@ -691,6 +703,20 @@ shaka.test.ManifestGenerator.prototype.mime = function(mime, codecs) {
   let stream = this.currentStream_();
   stream.mimeType = mime;
   stream.codecs = codecs || '';
+  return this;
+};
+
+
+/**
+ * Sets the closed captions of the current stream.
+ *
+ * @param {Map.<string, string>} closedCaptions
+ * @return {!shaka.test.ManifestGenerator}
+ */
+shaka.test.ManifestGenerator.prototype.closedCaptions =
+    function(closedCaptions) {
+  const stream = this.currentStream_();
+  stream.closedCaptions = closedCaptions;
   return this;
 };
 
