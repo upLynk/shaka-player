@@ -140,8 +140,7 @@ describe('DrmEngine', function() {
 
     eventManager = new shaka.util.EventManager();
 
-    mediaSourceEngine = new shaka.media.MediaSourceEngine(
-        video, new shaka.test.FakeClosedCaptionParser());
+    mediaSourceEngine = new shaka.media.MediaSourceEngine(video);
 
     const expectedObject = new Map();
     expectedObject.set(ContentType.AUDIO, audioStream);
@@ -205,10 +204,12 @@ describe('DrmEngine', function() {
             return drmEngine.attach(video);
           }).then(function() {
             return mediaSourceEngine.appendBuffer(ContentType.VIDEO,
-                videoInitSegment, null, null, /* hasClosedCaptions */ false);
+                                                  videoInitSegment,
+                                                  null, null);
           }).then(function() {
             return mediaSourceEngine.appendBuffer(ContentType.AUDIO,
-                audioInitSegment, null, null, /* hasClosedCaptions */ false);
+                                                  audioInitSegment,
+                                                  null, null);
           }).then(function() {
             return encryptedEventSeen;
           }).then(function() {
@@ -243,10 +244,12 @@ describe('DrmEngine', function() {
             }
 
             return mediaSourceEngine.appendBuffer(ContentType.VIDEO,
-                videoSegment, null, null, /* hasClosedCaptions */ false);
+                                                  videoSegment,
+                                                  null, null);
           }).then(function() {
             return mediaSourceEngine.appendBuffer(ContentType.AUDIO,
-                audioSegment, null, null, /* hasClosedCaptions */ false);
+                                                  audioSegment,
+                                                  null, null);
           }).then(function() {
             expect(video.buffered.end(0)).toBeGreaterThan(0);
             video.play();

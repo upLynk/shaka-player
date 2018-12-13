@@ -217,6 +217,7 @@ describe('OfflineManifestParser', function() {
     /** @type {!shaka.offline.StorageMuxer} */
     let muxer = new shaka.offline.StorageMuxer();
     return shaka.util.Destroyer.with([muxer], async () => {
+      await muxer.init();
       await muxer.erase();
     });
   }

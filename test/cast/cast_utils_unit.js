@@ -215,8 +215,7 @@ describe('CastUtils', function() {
           fail('Error code ' + (video.error ? video.error.code : 0));
         }
 
-        mediaSourceEngine = new shaka.media.MediaSourceEngine(
-            video, new shaka.test.FakeClosedCaptionParser());
+        mediaSourceEngine = new shaka.media.MediaSourceEngine(video);
 
         const ContentType = shaka.util.ManifestParserUtils.ContentType;
         const initObject = new Map();
@@ -226,12 +225,12 @@ describe('CastUtils', function() {
           return shaka.test.Util.fetch(initSegmentUrl);
         }).then(function(data) {
           return mediaSourceEngine.appendBuffer(ContentType.VIDEO, data,
-              null, null, /* hasClosedCaptions */ false);
+                                                null, null);
         }).then(function() {
           return shaka.test.Util.fetch(videoSegmentUrl);
         }).then(function(data) {
           return mediaSourceEngine.appendBuffer(ContentType.VIDEO, data,
-              null, null, /* hasClosedCaptions */ false);
+                                                null, null);
         }).catch(fail).then(done);
       });
 

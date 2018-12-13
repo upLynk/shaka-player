@@ -232,14 +232,14 @@ describe('DrmEngine', function() {
       const variants = shaka.util.StreamUtils.getAllVariants(manifest);
       await drmEngine.initForPlayback(variants, manifest.offlineSessionIds);
       expect(drmEngine.initialized()).toBe(true);
-      expect(drmEngine.willSupport('audio/webm')).toBeTruthy();
-      expect(drmEngine.willSupport('video/mp4; codecs="fake"')).toBeTruthy();
-
-      // Because DrmEngine will err on being too accepting, make sure it will
-      // reject something. However, we can only check that it is actually
-      // thing on non-Edge browsers because of https://bit.ly/2IcEgv0
-      if (!navigator.userAgent.includes('Edge/')) {
-        expect(drmEngine.willSupport('this-should-fail')).toBeFalsy();
+      let supportedTypes = drmEngine.getSupportedTypes();
+      // This is conditional because Edge 14 has a bug that prevents us from
+      // getting the types at all.  TODO: Remove the condition once Edge has
+      // released a fix for https://bit.ly/2IcEgv0
+      if (supportedTypes) {
+        expect(supportedTypes).toEqual([
+          'audio/webm', 'video/mp4; codecs="fake"',
+        ]);
       }
     });
 
@@ -783,8 +783,9 @@ describe('DrmEngine', function() {
 
       // Fail generateRequest.
       let session1 = createMockSession();
-      const nativeError = {message: 'whoops!'};
-      session1.generateRequest.and.returnValue(Promise.reject(nativeError));
+      session1.generateRequest.and.returnValue(Promise.reject({
+        message: 'whoops!',
+      }));
       mockMediaKeys.createSession.and.returnValue(session1);
 
       onErrorSpy.and.stub();
@@ -795,7 +796,7 @@ describe('DrmEngine', function() {
           shaka.util.Error.Severity.CRITICAL,
           shaka.util.Error.Category.DRM,
           shaka.util.Error.Code.FAILED_TO_GENERATE_LICENSE_REQUEST,
-          nativeError.message, nativeError, undefined));
+          'whoops!'));
     });
   });  // describe('attach')
 

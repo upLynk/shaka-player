@@ -647,13 +647,8 @@ function main(args) {
     for (var i = 1; i < pieces.length; ++i) {
       var partialName = pieces.slice(0, i).join('.');
       if (!namespaces.has(partialName)) {
-        var declaration;
-        if (i == 1) {
-          declaration = '/** @namespace */\n';
-          declaration += 'window.';
-        } else {
-          declaration = '/** @const */\n';
-        }
+        var declaration = '/** @const */\n';
+        if (i == 1) declaration += 'var ';
         declaration += partialName + ' = {};\n';
         namespaceDeclarations.push(declaration);
         namespaces.add(partialName);
@@ -669,8 +664,6 @@ function main(args) {
       '/**\n' +
       ' * @fileoverview Generated externs.  DO NOT EDIT!\n' +
       ' * @externs\n' +
-      ' * @suppress {duplicate} To prevent compiler errors with the namespace\n' +
-      ' *   being declared both here and by goog.provide in the library.\n' +
       ' */\n\n' +
       namespaceDeclarations.join('') + '\n' + externs);
 }

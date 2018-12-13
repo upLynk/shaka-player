@@ -41,7 +41,7 @@ describe('Offline', /** @suppress {accessControls} */ function() {
 
     if (supportsStorage()) {
       // Make sure we are starting with a blank slate.
-      await shaka.offline.Storage.deleteAll();
+      await shaka.offline.Storage.deleteAll(player);
       storage = new shaka.offline.Storage(player);
     }
   });
@@ -53,7 +53,7 @@ describe('Offline', /** @suppress {accessControls} */ function() {
 
     // Make sure we don't leave anything in storage after the test.
     if (supportsStorage()) {
-      await shaka.offline.Storage.deleteAll();
+      await shaka.offline.Storage.deleteAll(player);
     }
 
     if (player) {
@@ -106,13 +106,6 @@ describe('Offline', /** @suppress {accessControls} */ function() {
 
         storage.configure({usePersistentLicense: true});
         let content = await storage.store('test:sintel-enc');
-
-        // Work around http://crbug.com/887535 in which load cannot happen right
-        // after close.  Experimentally, we seem to need a ~1s delay, so we're
-        // using a 3s delay to ensure it doesn't flake.  Without this, we get
-        // error 6005 (FAILED_TO_CREATE_SESSION) with system code 70.
-        // TODO: Remove when Chrome is fixed
-        await shaka.test.Util.delay(3);
 
         let contentUri = content.offlineUri;
         goog.asserts.assert(

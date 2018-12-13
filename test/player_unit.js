@@ -519,6 +519,7 @@ describe('Player', function() {
         await player.load(fakeManifestUri, 0, returnManifest(manifest));
         player.setTextTrackVisibility(false);
         expect(streamingEngine.loadNewTextStream).not.toHaveBeenCalled();
+        expect(streamingEngine.unloadTextStream).toHaveBeenCalled();
         expect(streamingEngine.getActiveText()).toBe(null);
       });
 

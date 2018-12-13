@@ -41,9 +41,7 @@ describe('MediaSourceEngine', function() {
     metadata = shaka.test.TestScheme.DATA['sintel'];
     generators = shaka.test.TestScheme.GENERATORS['sintel'];
 
-    mediaSourceEngine = new shaka.media.MediaSourceEngine(
-        video,
-        new shaka.media.ClosedCaptionParser());
+    mediaSourceEngine = new shaka.media.MediaSourceEngine(video);
     mediaSource = /** @type {?} */(mediaSourceEngine)['mediaSource_'];
     expect(video.src).toBeTruthy();
     await mediaSourceEngine.init(new Map(), false);
@@ -59,32 +57,13 @@ describe('MediaSourceEngine', function() {
 
   function appendInit(type) {
     let segment = generators[type].getInitSegment(Date.now() / 1000);
-    return mediaSourceEngine.appendBuffer(
-        type, segment, null, null, /* hasClosedCaptions */ false);
+    return mediaSourceEngine.appendBuffer(type, segment, null, null);
   }
 
   function append(type, segmentNumber) {
     let segment = generators[type].
         getSegment(segmentNumber, 0, Date.now() / 1000);
-    return mediaSourceEngine.appendBuffer(
-        type, segment, null, null, /* hasClosedCaptions */ false);
-  }
-
-  // The start time and end time should be null for init segment with closed
-  // captions.
-  function appendInitWithClosedCaptions(type) {
-    let segment = generators[type].getInitSegment(Date.now() / 1000);
-    return mediaSourceEngine.appendBuffer(type, segment, /* startTime */ null,
-        /* endTime */ null, /* hasClosedCaptions */ true);
-  }
-
-  // The start time and end time should be valid for the segments with closed
-  // captions.
-  function appendWithClosedCaptions(type, segmentNumber) {
-    let segment = generators[type].
-        getSegment(segmentNumber, 0, Date.now() / 1000);
-    return mediaSourceEngine.appendBuffer(type, segment, /* startTime */ 0,
-        /* endTime */ 2, /* hasClosedCaptions */ true);
+    return mediaSourceEngine.appendBuffer(type, segment, null, null);
   }
 
   function buffered(type, time) {
@@ -325,8 +304,8 @@ describe('MediaSourceEngine', function() {
     expect(buffered(ContentType.VIDEO, 0)).toBeCloseTo(35, 1);
   });
 
-  it('extracts CEA-708 captions from hls', async () => {
-    // Load TS file with CEA-708 captions.
+  it('extracts CEA-708 captions', async () => {
+    // Load TS files with CEA-708 captions.
     metadata = shaka.test.TestScheme.DATA['cea-708_ts'];
     generators = shaka.test.TestScheme.GENERATORS['cea-708_ts'];
 
@@ -339,37 +318,13 @@ describe('MediaSourceEngine', function() {
 
     const initObject = new Map();
     initObject.set(ContentType.VIDEO, getFakeStream(metadata.video));
-    initObject.set(ContentType.TEXT, getFakeStream(metadata.text));
+    mediaSourceEngine.setUseEmbeddedText(true);
     // Call with forceTransmuxTS = true, so that it will transmux even on
     // platforms with native TS support.
     await mediaSourceEngine.init(initObject, /** forceTransmuxTS */ true);
-    mediaSourceEngine.setSelectedClosedCaptionId('CC1');
     await append(ContentType.VIDEO, 0);
-
+    expect(bufferStart(ContentType.VIDEO)).toBeCloseTo(1, 0);
+    expect(buffered(ContentType.VIDEO, 0)).toBeCloseTo(20, 1);
     expect(cues.length).toBe(3);
-  });
-
-  it('extracts CEA-708 captions from dash', async () => {
-    // Load MP4 file with CEA-708 closed captions.
-    metadata = shaka.test.TestScheme.DATA['cea-708_mp4'];
-    generators = shaka.test.TestScheme.GENERATORS['cea-708_mp4'];
-
-    // Create a mock text displayer, to intercept text cues.
-    let cues = [];
-    const mockTextDisplayer = /** @type {shaka.extern.TextDisplayer} */ ({
-      append: (newCues) => { cues = cues.concat(newCues); },
-    });
-    mediaSourceEngine.setTextDisplayer(mockTextDisplayer);
-
-    const initObject = new Map();
-    initObject.set(ContentType.VIDEO, getFakeStream(metadata.video));
-
-    await mediaSourceEngine.init(initObject, /** forceTransmuxTS */ false);
-    await mediaSourceEngine.setDuration(presentationDuration);
-    await appendInitWithClosedCaptions(ContentType.VIDEO);
-    mediaSourceEngine.setSelectedClosedCaptionId('CC1');
-    await appendWithClosedCaptions(ContentType.VIDEO, 1);
-
-    expect(cues.length).toBe(1);
   });
 });

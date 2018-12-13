@@ -219,35 +219,24 @@ def get_all_files(dir_path, exp=None):
   return ret
 
 
-def get_node_binary(module_name, bin_name=None):
+def get_node_binary(name):
   """Returns an array to be used in the command-line execution of a node binary.
 
   For example, this may return ['eslint'] (global install)
   or ['node', 'path/to/node_modules/eslint/bin/eslint.js'] (local install).
-
-  Arguments:
-    module_name: A string, the name of the module.
-    bin_name: An optional string, the name of the binary, which defaults to
-              module_name if not provided.
-
-  Returns:
-    An array of strings which form the command-line to call the binary.
   """
-
-  if not bin_name:
-    bin_name = module_name
 
   # Check local modules first.
   base = get_source_base()
-  path = os.path.join(base, 'node_modules', module_name)
+  path = os.path.join(base, 'node_modules', name)
   if os.path.isdir(path):
     json_path = os.path.join(path, 'package.json')
     package_data = json.load(open(json_path, 'r'))
-    bin_path = os.path.join(path, package_data['bin'][bin_name])
+    bin_path = os.path.join(path, package_data['bin'][name])
     return ['node', bin_path]
 
   # Not found locally, assume it can be found in os.environ['PATH'].
-  return [bin_name]
+  return [name]
 
 
 class InDir(object):

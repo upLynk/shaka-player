@@ -62,7 +62,7 @@ a.disabled_link {
   color: Gray;
 }
 
-#loadButton, #unloadButton {
+button {
   background-color: #d04030;
   border: none;
   border-radius: 2px;
@@ -75,11 +75,11 @@ a.disabled_link {
   width: 7.5em;
 }
 
-#loadButton:active, #unloadButton:active {
+button:active {
   background-color: #e02020;
 }
 
-#loadButton:hover, #unloadButton:hover {
+button:hover {
   background-color: #e02020;
 }
 
@@ -327,6 +327,16 @@ body.noinput #logSection #log {
   flex-grow: 1;
 }
 
+.overlay-parent {
+  /* Makes this a positioned ancestor of .overlay */
+  position: relative;
+}
+
+.overlay {
+  /* Allows this to be positioned relative to a containing .overlay-parent */
+  position: absolute;
+}
+
 .for-screen-readers {
   /* Hide the content from sighted users, but not screen readers */
   position: absolute;
@@ -348,12 +358,12 @@ body.noinput #logSection #log {
 }
 
 @media screen and (max-width: 550px) {
-  button.appButton {
+  button {
     margin: 0 0.6em 0.8em 0;
     padding: 9px 0 10px 0;
   }
 
-  button.appButton:active {
+  button:active {
     background-color: darkRed;
   }
 
@@ -382,7 +392,7 @@ body.noinput #logSection #log {
 }
 
 @media screen and (max-width: 400px) {
-  button.appButton {
+  button {
     font-size: 0.8em;
     margin: 0 0.4em 1em 0;
     padding: 5px 0 7px 0;

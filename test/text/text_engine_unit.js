@@ -65,20 +65,6 @@ describe('TextEngine', function() {
       TextEngine.unregisterParser(dummyMimeType);
       expect(TextEngine.isTypeSupported(dummyMimeType)).toBe(false);
     });
-
-    it('reports support when it\'s closed captions and muxjs is available',
-          function() {
-        const closedCaptionsType =
-           shaka.util.MimeUtils.CLOSED_CAPTION_MIMETYPE;
-        const originalMuxjs = window.muxjs;
-        expect(TextEngine.isTypeSupported(closedCaptionsType)).toBe(true);
-        try {
-          window['muxjs'] = null;
-          expect(TextEngine.isTypeSupported(closedCaptionsType)).toBe(false);
-        } finally {
-          window['muxjs'] = originalMuxjs;
-        }
-    });
   });
 
   describe('appendBuffer', function() {
@@ -123,85 +109,6 @@ describe('TextEngine', function() {
     });
   });
 
-  describe('storeAndAppendClosedCaptions', function() {
-    it('append closed captions with selected id', function() {
-      const caption = {
-        startPts: 0,
-        endPts: 100,
-        startTime: 0,
-        endTime: 1,
-        stream: 'CC1',
-        text: 'captions',
-      };
-
-      textEngine.setSelectedClosedCaptionId('CC1', 0);
-      textEngine.storeAndAppendClosedCaptions([caption], 0, 2);
-      expect(mockDisplayer.append).toHaveBeenCalled();
-    });
-
-    it('does not append closed captions without selected id', function() {
-      const caption = {
-        startPts: 0,
-        endPts: 100,
-        startTime: 1,
-        endTime: 2,
-        stream: 'CC1',
-        text: 'caption2',
-      };
-
-      textEngine.setSelectedClosedCaptionId('CC3', 0);
-      textEngine.storeAndAppendClosedCaptions([caption], 0, 2);
-      expect(mockDisplayer.append).not.toHaveBeenCalled();
-    });
-
-    it('stores closed captions', function() {
-      const caption0 = {
-        startPts: 0,
-        endPts: 100,
-        startTime: 0,
-        endTime: 1,
-        stream: 'CC1',
-        text: 'caption1',
-      };
-      const caption1 = {
-        startPts: 0,
-        endPts: 100,
-        startTime: 1,
-        endTime: 2,
-        stream: 'CC1',
-        text: 'caption2',
-      };
-      const caption2 = {
-        startPts: 0,
-        endPts: 100,
-        startTime: 1,
-        endTime: 2,
-        stream: 'CC3',
-        text: 'caption3',
-      };
-
-      textEngine.setSelectedClosedCaptionId('CC1', 0);
-      // Text Engine stores all the closed captions as a two layer map.
-      // {closed caption id -> {start and end time -> cues}}
-      textEngine.storeAndAppendClosedCaptions([caption0], 0, 1);
-      expect(textEngine.getNumberOfClosedCaptionChannels()).toEqual(1);
-      expect(textEngine.getNumberOfClosedCaptionsInChannel('CC1')).toEqual(1);
-
-      textEngine.storeAndAppendClosedCaptions([caption1], 1, 2);
-      // Caption1 has the same stream id with caption0, but different start and
-      // end time. The closed captions map should have 1 key CC1, and two values
-      // for two start and end times.
-      expect(textEngine.getNumberOfClosedCaptionChannels()).toEqual(1);
-      expect(textEngine.getNumberOfClosedCaptionsInChannel('CC1')).toEqual(2);
-
-      textEngine.storeAndAppendClosedCaptions([caption2], 1, 2);
-      // Caption2 has a different stream id CC3, so the closed captions map
-      // should have two different keys, CC1 and CC3.
-      expect(textEngine.getNumberOfClosedCaptionChannels()).toEqual(2);
-    });
-  });
-
-
   describe('remove', function() {
     let cue1;
     let cue2;
@@ -221,6 +128,7 @@ describe('TextEngine', function() {
         return p;
       }).catch(fail).then(done);
     });
+
 
     it('calls displayer.remove()', function(done) {
       textEngine.remove(0, 1).then(function() {

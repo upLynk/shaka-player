@@ -24,7 +24,7 @@ describe('HlsParser live', function() {
     '#EXTM3U\n',
     '#EXT-X-STREAM-INF:BANDWIDTH=200,CODECS="avc1",',
     'RESOLUTION=960x540,FRAME-RATE=60\n',
-    'video\n',
+    'test:/video\n',
   ].join('');
 
   /** @type {!shaka.test.FakeNetworkingEngine} */
@@ -169,7 +169,6 @@ describe('HlsParser live', function() {
     fakeNetEngine
         .setResponseText('test:/master', master)
         .setResponseText('test:/video', initialMedia)
-        .setResponseText('test:/redirected/video', initialMedia)
         .setResponseText('test:/video2', initialMedia)
         .setResponseText('test:/audio', initialMedia)
         .setResponseValue('test:/init.mp4', initSegmentData)
@@ -191,7 +190,6 @@ describe('HlsParser live', function() {
           // Replace the entries with the updated values.
           fakeNetEngine
               .setResponseText('test:/video', updatedMedia)
-              .setResponseText('test:/redirected/video', updatedMedia)
               .setResponseText('test:/video2', updatedMedia)
               .setResponseText('test:/audio', updatedMedia);
 
@@ -214,20 +212,20 @@ describe('HlsParser live', function() {
       '#EXTM3U\n',
       '#EXT-X-PLAYLIST-TYPE:EVENT\n',
       '#EXT-X-TARGETDURATION:5\n',
-      '#EXT-X-MAP:URI="init.mp4",BYTERANGE="616@0"\n',
+      '#EXT-X-MAP:URI="test:/init.mp4",BYTERANGE="616@0"\n',
       '#EXTINF:2,\n',
-      'main.mp4\n',
+      'test:/main.mp4\n',
     ].join('');
 
     const mediaWithAdditionalSegment = [
       '#EXTM3U\n',
       '#EXT-X-PLAYLIST-TYPE:EVENT\n',
       '#EXT-X-TARGETDURATION:5\n',
-      '#EXT-X-MAP:URI="init.mp4",BYTERANGE="616@0"\n',
+      '#EXT-X-MAP:URI="test:/init.mp4",BYTERANGE="616@0"\n',
       '#EXTINF:2,\n',
-      'main.mp4\n',
+      'test:/main.mp4\n',
       '#EXTINF:2,\n',
-      'main2.mp4\n',
+      'test:/main2.mp4\n',
     ].join('');
 
     it('treats already ended presentation like VOD', function(done) {
@@ -272,7 +270,7 @@ describe('HlsParser live', function() {
         const secondVariant = [
           '#EXT-X-STREAM-INF:BANDWIDTH=300,CODECS="avc1",',
           'RESOLUTION=1200x940,FRAME-RATE=60\n',
-          'video2',
+          'test:/video2',
         ].join('');
 
         let masterWithTwoVariants = master + secondVariant;
@@ -288,7 +286,7 @@ describe('HlsParser live', function() {
       it('updates all streams', function(done) {
         const audio = [
           '#EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="aud1",LANGUAGE="eng",',
-          'URI="audio"\n',
+          'URI="test:/audio"\n',
         ].join('');
 
         let masterWithAudio = master + audio;
@@ -304,12 +302,12 @@ describe('HlsParser live', function() {
       it('handles multiple updates', function(done) {
         const newSegment1 = [
           '#EXTINF:2,\n',
-          'main2.mp4\n',
+          'test:/main2.mp4\n',
         ].join('');
 
         const newSegment2 = [
           '#EXTINF:2,\n',
-          'main3.mp4\n',
+          'test:/main3.mp4\n',
         ].join('');
 
         let updatedMedia1 = media + newSegment1;
@@ -388,28 +386,28 @@ describe('HlsParser live', function() {
     const media = [
       '#EXTM3U\n',
       '#EXT-X-TARGETDURATION:5\n',
-      '#EXT-X-MAP:URI="init.mp4",BYTERANGE="616@0"\n',
+      '#EXT-X-MAP:URI="test:/init.mp4",BYTERANGE="616@0"\n',
       '#EXT-X-MEDIA-SEQUENCE:0\n',
       '#EXTINF:2,\n',
-      'main.mp4\n',
+      'test:/main.mp4\n',
     ].join('');
 
     const mediaWithoutSequenceNumber = [
       '#EXTM3U\n',
       '#EXT-X-TARGETDURATION:5\n',
-      '#EXT-X-MAP:URI="init.mp4",BYTERANGE="616@0"\n',
+      '#EXT-X-MAP:URI="test:/init.mp4",BYTERANGE="616@0"\n',
       '#EXTINF:2,\n',
-      'main.mp4\n',
+      'test:/main.mp4\n',
     ].join('');
 
     const mediaWithByteRange = [
       '#EXTM3U\n',
       '#EXT-X-TARGETDURATION:5\n',
-      '#EXT-X-MAP:URI="init.mp4",BYTERANGE="616@0"\n',
+      '#EXT-X-MAP:URI="test:/init.mp4",BYTERANGE="616@0"\n',
       '#EXT-X-MEDIA-SEQUENCE:0\n',
       '#EXT-X-BYTERANGE:121090@616\n',
       '#EXTINF:2,\n',
-      'main.mp4\n',
+      'test:/main.mp4\n',
     ].join('');
 
     const expectedStartByte = 616;
@@ -418,32 +416,32 @@ describe('HlsParser live', function() {
     const mediaWithAdditionalSegment = [
       '#EXTM3U\n',
       '#EXT-X-TARGETDURATION:5\n',
-      '#EXT-X-MAP:URI="init.mp4",BYTERANGE="616@0"\n',
+      '#EXT-X-MAP:URI="test:/init.mp4",BYTERANGE="616@0"\n',
       '#EXT-X-MEDIA-SEQUENCE:0\n',
       '#EXTINF:2,\n',
-      'main.mp4\n',
+      'test:/main.mp4\n',
       '#EXTINF:2,\n',
-      'main2.mp4\n',
+      'test:/main2.mp4\n',
     ].join('');
 
     const mediaWithRemovedSegment = [
       '#EXTM3U\n',
       '#EXT-X-TARGETDURATION:5\n',
-      '#EXT-X-MAP:URI="init.mp4",BYTERANGE="616@0"\n',
+      '#EXT-X-MAP:URI="test:/init.mp4",BYTERANGE="616@0"\n',
       '#EXT-X-MEDIA-SEQUENCE:1\n',
       '#EXTINF:2,\n',
-      'main2.mp4\n',
+      'test:/main2.mp4\n',
     ].join('');
 
     let mediaWithManySegments = [
       '#EXTM3U\n',
       '#EXT-X-TARGETDURATION:5\n',
-      '#EXT-X-MAP:URI="init.mp4",BYTERANGE="616@0"\n',
+      '#EXT-X-MAP:URI="test:/init.mp4",BYTERANGE="616@0"\n',
       '#EXT-X-MEDIA-SEQUENCE:0\n',
     ].join('');
     for (let i = 0; i < 1000; ++i) {
       mediaWithManySegments += '#EXTINF:2,\n';
-      mediaWithManySegments += 'main.mp4\n';
+      mediaWithManySegments += 'test:/main.mp4\n';
     }
 
     it('starts presentation as VOD when ENDLIST is present', function(done) {
@@ -513,10 +511,10 @@ describe('HlsParser live', function() {
     it('offsets VTT text with rolled over TS timestamps', function(done) {
       const masterWithVtt = [
         '#EXTM3U\n',
-        '#EXT-X-MEDIA:TYPE=SUBTITLES,LANGUAGE="fra",URI="text"\n',
+        '#EXT-X-MEDIA:TYPE=SUBTITLES,LANGUAGE="fra",URI="test:/text"\n',
         '#EXT-X-STREAM-INF:BANDWIDTH=200,CODECS="avc1",',
         'RESOLUTION=960x540,FRAME-RATE=60\n',
-        'video\n',
+        'test:/video\n',
       ].join('');
 
       const textPlaylist = [
@@ -524,7 +522,7 @@ describe('HlsParser live', function() {
         '#EXT-X-TARGETDURATION:5\n',
         '#EXT-X-MEDIA-SEQUENCE:0\n',
         '#EXTINF:2,\n',
-        'main.vtt\n',
+        'test:/main.vtt\n',
       ].join('');
 
       const vtt = [
@@ -588,29 +586,19 @@ describe('HlsParser live', function() {
       });
 
       it('handles updates with redirects', function(done) {
-        let oldRef1 = ManifestParser.makeReference('test:/main.mp4',
-                                                   0, 2, 4);
-
-        let newRef1 = ManifestParser.makeReference('test:/redirected/main.mp4',
-                                                   0, 2, 4);
-        let newRef2 = ManifestParser.makeReference('test:/redirected/main2.mp4',
-                                                   1, 4, 6);
-
-        let playlistFetchCount = 0;
+        let ref1 = ManifestParser.makeReference('test:/main.mp4',
+                                                0, 2, 4);
+        let ref2 = ManifestParser.makeReference('test:/main2.mp4',
+                                                1, 4, 6);
 
         fakeNetEngine.setResponseFilter(function(type, response) {
-          // Simulate a redirect on the updated playlist by changing the
-          // response URI on the second playlist fetch.
-          if (response.uri == 'test:/video') {
-            playlistFetchCount++;
-            if (playlistFetchCount == 2) {
-              response.uri = 'test:/redirected/video';
-            }
-          }
+          // Simulate a redirect by changing the response URI
+          if (response.uri.startsWith('test:/redirected/')) return;
+          response.uri = response.uri.replace('test:/', 'test:/redirected/');
         });
 
-        testUpdate(done, master, media, [oldRef1],
-                   mediaWithAdditionalSegment, [newRef1, newRef2]);
+        testUpdate(done, master, media, [ref1],
+                   mediaWithAdditionalSegment, [ref1, ref2]);
       });
 
       it('parses start time from mp4 segments', function(done) {
@@ -735,10 +723,10 @@ describe('HlsParser live', function() {
       it('handles rollover on update', function(done) {
         const masterWithVtt = [
           '#EXTM3U\n',
-          '#EXT-X-MEDIA:TYPE=SUBTITLES,LANGUAGE="fra",URI="text"\n',
+          '#EXT-X-MEDIA:TYPE=SUBTITLES,LANGUAGE="fra",URI="test:/text"\n',
           '#EXT-X-STREAM-INF:BANDWIDTH=200,CODECS="avc1",',
           'RESOLUTION=960x540,FRAME-RATE=60\n',
-          'video\n',
+          'test:/video\n',
         ].join('');
 
        const textPlaylist1 = [
@@ -746,7 +734,7 @@ describe('HlsParser live', function() {
           '#EXT-X-TARGETDURATION:5\n',
           '#EXT-X-MEDIA-SEQUENCE:0\n',
           '#EXTINF:2,\n',
-          'main1.vtt\n',
+          'test:/main1.vtt\n',
         ].join('');
 
         const textPlaylist2 = [
@@ -754,9 +742,9 @@ describe('HlsParser live', function() {
           '#EXT-X-TARGETDURATION:5\n',
           '#EXT-X-MEDIA-SEQUENCE:0\n',
           '#EXTINF:2,\n',
-          'main1.vtt\n',
+          'test:/main1.vtt\n',
           '#EXTINF:2,\n',
-          'main2.vtt\n',
+          'test:/main2.vtt\n',
         ].join('');
 
         // ~0.7s from rollover

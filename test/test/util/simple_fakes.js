@@ -16,7 +16,6 @@
  */
 
 goog.provide('shaka.test.FakeAbrManager');
-goog.provide('shaka.test.FakeClosedCaptionParser');
 goog.provide('shaka.test.FakeManifestParser');
 goog.provide('shaka.test.FakePlayhead');
 goog.provide('shaka.test.FakePlayheadObserver');
@@ -546,44 +545,6 @@ shaka.test.FakeTextTrack.prototype.addCue;
 
 /** @type {!jasmine.Spy} */
 shaka.test.FakeTextTrack.prototype.removeCue;
-
-
-/**
- * Create a test-focused closed caption parser that requires the creator to
- * provide behaviours for the underlying spies. If no behaviour is provided all
- * calls to the parser will act as NO-OPs.
- *
- * @implements {shaka.media.IClosedCaptionParser}
- * @final
- */
-shaka.test.FakeClosedCaptionParser = class {
-  constructor() {
-    /** @type {!jasmine.Spy} */
-    this.initSpy = jasmine.createSpy('init');
-    /** @type {!jasmine.Spy} */
-    this.parseFromSpy = jasmine.createSpy('parseFrom');
-    /** @type {!jasmine.Spy} */
-    this.resetSpy = jasmine.createSpy('reset');
-  }
-
-  /** @override */
-  init() {
-    const func = shaka.test.Util.spyFunc(this.initSpy);
-    func();
-  }
-
-  /** @override */
-  parseFrom(data, onCaptions) {
-    const func = shaka.test.Util.spyFunc(this.parseFromSpy);
-    func(data, onCaptions);
-  }
-
-  /** @override */
-  reset() {
-    const func = shaka.test.Util.spyFunc(this.resetSpy);
-    func();
-  }
-};
 
 
 /**
